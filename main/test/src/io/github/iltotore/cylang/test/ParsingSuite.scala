@@ -79,6 +79,11 @@ object ParsingSuite extends TestSuite {
           test("unclosed") - assertMatch(parseAll(expression, "1 /")) { case Failure(_, _) => }
         }
 
+        test("modulo") {
+          test("valid") - assertMatch(parseAll(expression, "1 % 1")) { case Success(Modulo(_, _), _) => }
+          test("unclosed") - assertMatch(parseAll(expression, "1 /")) { case Failure(_, _) => }
+        }
+
         test("priority") {
 
           test("parantheseless") {
@@ -109,9 +114,6 @@ object ParsingSuite extends TestSuite {
                 Literal(Value.Integer(3))
               )
             )
-
-            println(s"expected=$expected")
-            println(s"parsed=${parseAll(expression, "(5 + 2) * 3")}")
 
             assertMatch(parseAll(expression, "21 = (5 + 2) * 3")) { case Success(parsed, _) if parsed equals expected => }
           }

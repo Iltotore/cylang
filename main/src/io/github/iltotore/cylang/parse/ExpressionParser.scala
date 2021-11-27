@@ -30,7 +30,8 @@ object ExpressionParser extends RegexParsers {
     "+" -> Addition.apply,
     "-" -> Substraction.apply,
     "*" -> Multiplication.apply,
-    "/" -> Division.apply
+    "/" -> Division.apply,
+    "%" -> Modulo.apply
   )
 
   //Binary Operators
@@ -38,7 +39,7 @@ object ExpressionParser extends RegexParsers {
   def equality = inequality * ("!?=".r ^^ binaryOps.apply)
   def inequality = arith * ("[<>]=?".r ^^ binaryOps.apply)
   def arith = term * ("[+-]".r ^^ binaryOps.apply)
-  def term = invocable * ("[*/]".r ^^ binaryOps.apply)
+  def term = invocable * ("[*/%]".r ^^ binaryOps.apply)
 
   //private val unaryOps: Map[String, Expression => Expression]
 
