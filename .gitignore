@@ -1,0 +1,5 @@
+# Project exclude paths
+/.bsp/
+/out/main/compile/dest/classes/
+/out/main/test/compile/dest/classes/
+/out/mill/bsp/MillBuildServer/mill-build/compile/overriden/mill/scalalib/bsp/MillBuildTarget/compile/dest/classes/
