@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.ast
 
 import io.github.iltotore.cylang.eval.EvaluationError
 import io.github.iltotore.cylang.util.*
-import io.github.iltotore.cylang.{CYFunction, CYType, Context, Scope, Variable}
+import io.github.iltotore.cylang.{CYType, Context, Scope, Variable}
 
 sealed trait Expression
 
@@ -12,6 +12,8 @@ object Expression {
   
   case class Literal(value: Value) extends Expression
 
+  case class Negation(expression: Expression) extends Expression
+
   case class Addition(left: Expression, right: Expression) extends Expression
 
   case class Substraction(left: Expression, right: Expression) extends Expression
@@ -19,6 +21,8 @@ object Expression {
   case class Multiplication(left: Expression, right: Expression) extends Expression
 
   case class Division(left: Expression, right: Expression) extends Expression
+
+  case class WholeDivision(left: Expression, right: Expression) extends Expression
   
   case class Modulo(left: Expression, right: Expression) extends Expression
   
@@ -31,6 +35,8 @@ object Expression {
   case class Less(left: Expression, right: Expression) extends Expression
 
   case class LessEqual(left: Expression, right: Expression) extends Expression
+
+  case class Not(expression: Expression) extends Expression
   
   case class And(left: Expression, right: Expression) extends Expression
   
@@ -44,7 +50,7 @@ object Expression {
 
   case class ForLoop(name: String, from: Expression, to: Expression, expression: Expression) extends Expression
 
-  case class WhileLoop(condition: Expression, expression: Expression) extends Expression
+  case class WhileLoop(condition: Expression, expression: Expression) extends Expression //TODO do-while
   
   case class If(condition: Expression, expression: Expression, elseExpression: Expression) extends Expression
 
