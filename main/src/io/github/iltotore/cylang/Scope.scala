@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang
 
-import io.github.iltotore.cylang.ast.Value
+import io.github.iltotore.cylang.ast.{CYFunction, Value}
 
 case class Scope(depth: Int, functions: Map[String, CYFunction], variables: Map[String, Variable]) {
 

@@ -1,8 +1,8 @@
 package io.github.iltotore.cylang.test
 
 import utest.*
-import io.github.iltotore.cylang.{CYFunction, CYType, Context, Parameter, Scope, Variable}
-import io.github.iltotore.cylang.ast.{Expression, Value}
+import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope, Variable}
+import io.github.iltotore.cylang.ast.*
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.eval.*
 import io.github.iltotore.cylang.eval.given_Evaluator_Expression.evaluate
@@ -14,6 +14,21 @@ object EvaluationSuite extends TestSuite {
     given Context = Context.empty
 
     test("literal") - assertMatch(Literal(Value.Bool(true)).evaluate) { case Right((_, Value.Bool(true))) => }
+
+    test("negation") {
+
+      test - assertMatch(
+        Negation(
+          Literal(Value.Integer(1))
+        ).evaluate
+      ) { case Right((_, Value.Integer(-1))) => }
+
+      test - assertMatch(
+        Negation(
+          Literal(Value.Real(1.5))
+        ).evaluate
+      ) { case Right((_, Value.Real(-1.5))) => }
+    }
 
     test("addition") {
       test("integer") - assertMatch(
@@ -171,6 +186,42 @@ object EvaluationSuite extends TestSuite {
       }
 
       test("zero") - assertMatch(Division(Literal(Value.Real(5)), Literal(Value.Real(0))).evaluate) { case Left(_) => }
+    }
+
+    test("wholeDivision") {
+
+      test("real") {
+
+        test - assertMatch(
+          WholeDivision(
+            Literal(Value.Integer(5)),
+            Literal(Value.Integer(2))
+          ).evaluate
+        ) { case Right((_, Value.Integer(2))) => }
+
+        test - assertMatch(
+          WholeDivision(
+            Literal(Value.Real(2.5)),
+            Literal(Value.Real(0.5))
+          ).evaluate
+        ) { case Right((_, Value.Integer(5))) => }
+
+        test - assertMatch(
+          WholeDivision(
+            Literal(Value.Integer(1)),
+            Literal(Value.Real(0.5))
+          ).evaluate
+        ) { case Right((_, Value.Integer(2))) => }
+
+        test - assertMatch(
+          WholeDivision(
+            Literal(Value.Real(1.5)),
+            Literal(Value.Integer(2))
+          ).evaluate
+        ) { case Right((_, Value.Integer(0))) => }
+      }
+
+      test("zero") - assertMatch(WholeDivision(Literal(Value.Real(5)), Literal(Value.Real(0))).evaluate) { case Left(_) => }
     }
 
     test("modulo") {
@@ -334,6 +385,20 @@ object EvaluationSuite extends TestSuite {
           Literal(Value.Integer(0))
         ).evaluate
       ) { case Right((_, Value.Bool(false))) => }
+    }
+
+    test("not") {
+      test - assertMatch(
+        Not(
+          Literal(Value.Bool(true))
+        ).evaluate
+      ) { case Right((_, Value.Bool(false))) => }
+
+      test - assertMatch(
+        Not(
+          Literal(Value.Bool(false))
+        ).evaluate
+      ) { case Right((_, Value.Bool(true))) => }
     }
 
     test("and") {

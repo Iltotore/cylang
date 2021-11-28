@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang.eval
 
-import io.github.iltotore.cylang.{CYFunction, CYType, Context, Variable}
+import io.github.iltotore.cylang.{CYType, Context, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Expression, Value}
 
@@ -15,6 +15,17 @@ trait ExpressionEvaluator {
         case Empty => Right((context, Value.Void))
 
         case Literal(value) => Right((context, value))
+
+        case Negation(expression) => eval {
+          evalUnbox(expression) match {
+
+            case Value.Integer(x) => Value.Integer(-x)
+
+            case Value.Real(x) => Value.Real(-x)
+
+            case _ => ??
+          }
+        }
 
         case Addition(left, right) => eval {
           (evalUnbox(left), evalUnbox(right)) match {
@@ -59,6 +70,17 @@ trait ExpressionEvaluator {
             case (Value.Number(x), Value.Number(0)) => abort("Division by zero")
 
             case (Value.Number(x), Value.Number(y)) => Value.Real(x / y)
+
+            case _ => ??
+          }
+        }
+
+        case WholeDivision(left, right) => eval {
+          (evalUnbox(left), evalUnbox(right)) match {
+
+            case (Value.Number(x), Value.Number(0)) => abort("Division by zero")
+
+            case (Value.Number(x), Value.Number(y)) => Value.Integer((x / y).toInt)
 
             case _ => ??
           }
@@ -115,6 +137,15 @@ trait ExpressionEvaluator {
           (evalUnbox(left), evalUnbox(right)) match {
 
             case (Value.Number(x), Value.Number(y)) => Value.Bool(x <= y)
+
+            case _ => ??
+          }
+        }
+
+        case Not(expression) => eval {
+          evalUnbox(expression) match {
+
+            case Value.Bool(value) => Value.Bool(!value)
 
             case _ => ??
           }
