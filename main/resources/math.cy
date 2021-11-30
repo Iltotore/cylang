@@ -30,5 +30,14 @@ PROGRAMME math
     FIN POUR
     RETOURNER res
   FIN
+  
+  FONCTION abs(x: reel): reel
+  DEBUT
+    SI x < 0 ALORS
+      RETOURNER -x
+    SINON
+      RETOURNER x
+    FIN SI
+  FIN
 FIN
 
