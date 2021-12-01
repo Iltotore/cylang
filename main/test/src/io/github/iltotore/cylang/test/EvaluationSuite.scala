@@ -541,13 +541,19 @@ object EvaluationSuite extends TestSuite {
       )
 
       val result =
-        ForLoop("i", Literal(Value.Integer(0)), Literal(Value.Integer(10)), VariableAssignment(
+        ForLoop(
+          "i",
+          Literal(Value.Integer(0)),
+          Literal(Value.Integer(10)),
+          Literal(Value.Integer(1)),
+          VariableAssignment(
           "x",
           Addition(
             VariableCall("x"),
             VariableCall("i")
           )
-        )).evaluate
+        )
+        ).evaluate
 
       assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _)) => }
     }
@@ -645,6 +651,7 @@ object EvaluationSuite extends TestSuite {
                   name = "i",
                   from = Literal(Value.Integer(1)),
                   to = Addition(VariableCall("x"), Literal(Value.Integer(1))),
+                  step = Literal(Value.Integer(1)),
                   expression = VariableAssignment(
                     name = "result",
                     expression = Multiplication(VariableCall("result"), VariableCall("i"))

@@ -4,6 +4,8 @@ import io.github.iltotore.cylang.{CYType, Context, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Expression, Value}
 
+import scala.collection.immutable.NumericRange
+
 trait ExpressionEvaluator {
 
   given Evaluator[Expression] with {
@@ -199,12 +201,12 @@ trait ExpressionEvaluator {
           unbox(function.evaluate(values))
         }
 
-        case ForLoop(name, from, t, expression) => eval {
-          (evalUnbox(from), evalUnbox(t)) match {
+        case ForLoop(name, from, to, step, expression) => eval {
+          (evalUnbox(from), evalUnbox(to), evalUnbox(step)) match {
 
-            case (Value.Integer(x), Value.Integer(y)) =>
+            case (Value.Integer(x), Value.Integer(y), Value.Integer(s)) =>
               update(currentContext.copy(scope = currentContext.scope.withDeclaration(name, CYType.Integer, Value.Integer(x))))
-              for (i <- x until y) {
+              for (i <- NumericRange(x, y, s)) {
                 update(currentContext.copy(scope = currentContext.scope.withAssignment(name, Value.Integer(i))))
                 evalUnbox(expression)
               }

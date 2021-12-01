@@ -48,7 +48,7 @@ object Expression {
 
   case class FunctionCall(name: String, args: List[Expression]) extends Expression
 
-  case class ForLoop(name: String, from: Expression, to: Expression, expression: Expression) extends Expression
+  case class ForLoop(name: String, from: Expression, to: Expression, step: Expression, expression: Expression) extends Expression
 
   case class WhileLoop(condition: Expression, expression: Expression) extends Expression //TODO do-while
   

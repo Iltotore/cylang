@@ -6,8 +6,10 @@ import io.github.iltotore.cylang.ast.{Expression, Value}
 import scala.util.parsing.combinator.*
 
 object ExpressionParser extends RegexParsers {
-  
+
   def expression: Parser[Expression] = variableAssignment
+
+  def empty = success(Empty)
 
   //Literal
   def bool: Parser[Literal] = raw"(true)|(false)".r ^^ { x => Literal(Value.Bool(x.toBoolean)) }
@@ -27,7 +29,7 @@ object ExpressionParser extends RegexParsers {
 
   def variableCall = raw"\w+".r ^^ VariableCall.apply
 
-  def functionCall = raw"\w+".r ~ ("(" ~> repsep(expression, ",")  <~ ")") ^^ {
+  def functionCall = raw"\w+".r ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {
     case name ~ args => FunctionCall(name, args)
   }
 
@@ -47,11 +49,24 @@ object ExpressionParser extends RegexParsers {
 
   //Binary Operators
   //POUR i DE 0 A 10 FAIRE
-  def forLoop = "POUR" ~> raw"\w+".r ~ "DE" ~ expression ~ "A" ~ expression ~ "FAIRE" ~ tree("POUR") ^^ {
-    case param ~ "DE" ~ from ~ "A" ~ to ~ "FAIRE" ~ expr => ForLoop(param, from, to, expr)
+  def forLoop: Parser[ForLoop] = "POUR" ~> raw"\w+".r ~ "DE" ~ expression ~ "A" ~ expression ~ ("PAS DE" ~> expression).? ~ "FAIRE" ~ tree("FIN POUR") ^^ {
+    case param ~ "DE" ~ from ~ "A" ~ to ~ Some(step) ~ "FAIRE" ~ expr => ForLoop(param, from, to, step, expr)
+    case param ~ "DE" ~ from ~ "A" ~ to ~ None ~ "FAIRE" ~ expr => ForLoop(param, from, to, Literal(Value.Integer(1)), expr)
   }
 
-  def tree(end: String) = rep(not("FIN") ~> expression) <~ (s"FIN $end") ^^ Tree.apply
+  def whileLoop: Parser[WhileLoop] = "TANT QUE" ~> expression ~ "FAIRE" ~ tree("FIN TANT QUE") ^^ { case cond ~ "FAIRE" ~ expr => WhileLoop(cond, expr) }
+
+  def ifElse: Parser[If] = "SI" ~> expression ~ "FAIRE" ~ ifBody ^^ {
+    case cond ~ "FAIRE" ~ (expr ~ elseExpr) => If(cond, expr, elseExpr)
+  }
+
+  def ifBody: Parser[~[Expression, Expression]] =  (tree("SINON") ~ (ifElse | ("FAIRE" ~> tree("FIN SI")))) | (tree("FIN SI") ~ empty)
+  
+  def treeReturn = "RETOURNER" ~> expression ^^ Return.apply
+
+  def treeInvocable = forLoop | whileLoop | ifElse | treeReturn
+
+  def tree(end: Parser[?]) = rep(not(end) ~> (expression | treeInvocable)) <~ end ^^ Tree.apply
 
   def variableAssignment = equality | (raw"\w+".r ~ "<-" ~ equality ^^ { case name ~ _ ~ expr => VariableAssignment(name, expr) })
 
