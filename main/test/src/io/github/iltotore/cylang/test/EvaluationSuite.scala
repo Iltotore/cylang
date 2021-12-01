@@ -583,8 +583,6 @@ object EvaluationSuite extends TestSuite {
         ))
       ).evaluate
 
-      println(result.map(_._1.scope.variables("x")))
-
       assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _)) => }
     }
 
