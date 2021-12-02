@@ -250,6 +250,13 @@ trait ExpressionEvaluator {
           update(currentContext.copy(returned = Some(evalUnbox(expression))))
           Value.Void
         }
+
+        case VariablesDeclaration(variables) =>
+          Right((
+            variables
+              .foldLeft(context)((ctx, variable) => ctx.copy(scope = ctx.scope.withDeclaration(variable._1, variable._2, Value.Void))),
+            Value.Void
+          ))
       }
     }
   }
