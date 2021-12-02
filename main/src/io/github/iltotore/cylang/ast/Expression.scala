@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.ast
 
 import io.github.iltotore.cylang.eval.EvaluationError
 import io.github.iltotore.cylang.util.*
-import io.github.iltotore.cylang.{CYType, Context, Scope, Variable}
+import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope, Variable}
 
 sealed trait Expression
 
@@ -57,4 +57,12 @@ object Expression {
   case class Tree(expressions: List[Expression]) extends Expression
   
   case class Return(expression: Expression) extends Expression
+
+  case class VariablesDeclaration(variables: Map[String, CYType]) extends Expression
+
+  case class Body(variables: VariablesDeclaration, expression: Expression) extends Expression
+
+  case class FunctionDeclaration(name: String, parameters: List[Parameter], body: Body) extends Expression
+
+  case class ProgramDeclaration(name: String, body: Body) extends Expression
 }

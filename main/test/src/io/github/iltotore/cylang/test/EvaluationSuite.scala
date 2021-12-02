@@ -547,12 +547,12 @@ object EvaluationSuite extends TestSuite {
           Literal(Value.Integer(10)),
           Literal(Value.Integer(1)),
           VariableAssignment(
-          "x",
-          Addition(
-            VariableCall("x"),
-            VariableCall("i")
+            "x",
+            Addition(
+              VariableCall("x"),
+              VariableCall("i")
+            )
           )
-        )
         ).evaluate
 
       assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _)) => }
@@ -634,6 +634,12 @@ object EvaluationSuite extends TestSuite {
       test - assertMatch(Tree(List(Literal(Value.Integer(0)))).evaluate) { case Right((_, Value.Void)) => }
 
     }
+
+    test("variablesDecl") - assertMatch(
+      VariablesDeclaration(Map("x" -> CYType.Integer))
+        .evaluate
+        .map(_._1.scope.variables("x"))
+    ) { case Right(Variable(CYType.Integer, Value.Void, _)) => }
 
     test("global") {
 
