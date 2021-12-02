@@ -1,5 +1,6 @@
 package io.github.iltotore.cylang.parse
 
+import io.github.iltotore.cylang.{CYType, Parameter}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Expression, Value}
 
@@ -33,6 +34,24 @@ object ExpressionParser extends RegexParsers {
     case name ~ args => FunctionCall(name, args)
   }
 
+  def cyType = raw"\w+".r flatMap (
+    name => CYType
+      .allTypes
+      .find(_.name equals name)
+      .fold(failure(s"Unknown type: `$name`"))(success)
+    )
+
+  def param = raw"\w+".r ~ ":" ~ cyType ^^ { case name ~ ":" ~ tpe => Parameter(name, tpe) }
+
+  def body = ("VARIABLE" ~> rep(not("DEBUT") ~> param)).? ~ "DEBUT" ~ tree("FIN") ^^ {
+    case Some(variables) ~ "DEBUT" ~ expr => Body(variables, expr)
+    case None ~ "DEBUT" ~ expr => Body(List.empty, expr)
+  }
+  
+  def functionDeclaration = "FONCTION" ~> raw"\w+".r ~ ("(" ~> repsep(param, ",") <~ ")") ~ ":" ~ cyType ~ body ^^ {
+    case name ~ params ~ ":" ~ tpe ~ b => FunctionDeclaration(name, tpe, params, b)
+  }
+
   private val binaryOps: Map[String, (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
     ">" -> Greater.apply,
@@ -60,8 +79,8 @@ object ExpressionParser extends RegexParsers {
     case cond ~ "FAIRE" ~ (expr ~ elseExpr) => If(cond, expr, elseExpr)
   }
 
-  def ifBody: Parser[~[Expression, Expression]] =  (tree("SINON") ~ (ifElse | ("FAIRE" ~> tree("FIN SI")))) | (tree("FIN SI") ~ empty)
-  
+  def ifBody: Parser[~[Expression, Expression]] = (tree("SINON") ~ (ifElse | ("FAIRE" ~> tree("FIN SI")))) | (tree("FIN SI") ~ empty)
+
   def treeReturn = "RETOURNER" ~> expression ^^ Return.apply
 
   def treeInvocable = forLoop | whileLoop | ifElse | treeReturn
