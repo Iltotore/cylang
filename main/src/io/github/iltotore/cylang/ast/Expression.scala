@@ -60,9 +60,9 @@ object Expression {
 
   case class VariablesDeclaration(variables: Map[String, CYType]) extends Expression
 
-  case class Body(variables: VariablesDeclaration, expression: Expression) extends Expression
+  case class Body(variables: VariablesDeclaration, expression: Expression)
 
-  case class FunctionDeclaration(name: String, parameters: List[Parameter], body: Body) extends Expression
+  case class FunctionDeclaration(name: String, tpe: CYType, parameters: List[Parameter], body: Body) extends Expression
 
   case class ProgramDeclaration(name: String, body: Body) extends Expression
 }

@@ -641,6 +641,20 @@ object EvaluationSuite extends TestSuite {
         .map(_._1.scope.variables("x"))
     ) { case Right(Variable(CYType.Integer, Value.Void, _)) => }
 
+    test("functionDecl") - assertMatch(
+      FunctionDeclaration(
+        "facto",
+        CYType.Integer,
+        List(Parameter("x", CYType.Integer)),
+        Body(
+          VariablesDeclaration(Map("res" -> CYType.Integer)),
+          Literal(Value.Integer(1))
+        )
+      )
+        .evaluate
+        .map(_._1.scope.functions("facto"))
+    ) { case Right(CYFunction.UserDefined(CYType.Integer, List(Parameter("x", CYType.Integer)), _, _)) => }
+
     test("global") {
 
       given Context = Context(
