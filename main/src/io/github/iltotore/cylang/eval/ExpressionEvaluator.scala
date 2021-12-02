@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.eval
 
 import io.github.iltotore.cylang.{CYType, Context, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.ast.{Expression, Value}
+import io.github.iltotore.cylang.ast.{CYFunction, Expression, Value}
 
 import scala.collection.immutable.NumericRange
 
@@ -255,6 +255,15 @@ trait ExpressionEvaluator {
           Right((
             variables
               .foldLeft(context)((ctx, variable) => ctx.copy(scope = ctx.scope.withDeclaration(variable._1, variable._2, Value.Void))),
+            Value.Void
+          ))
+
+        case FunctionDeclaration(name, tpe, parameters, Body(VariablesDeclaration(variables), expression)) =>
+          Right((
+            context.copy(scope = context.scope.withFunction(
+              name,
+              CYFunction.UserDefined(tpe, parameters, variables.map { case (k, v) => (k, (v, Value.Void)) }, expression)
+            )),
             Value.Void
           ))
       }
