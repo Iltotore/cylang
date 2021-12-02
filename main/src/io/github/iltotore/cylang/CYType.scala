@@ -11,17 +11,17 @@ object CYType {
   
   case object Integer extends Number {
 
-    override val name: String = "integer"
+    override val name: String = "entier"
   }
 
   case object Real extends Number {
 
-    override def name: String = "real"
+    override def name: String = "reel"
   }
 
   case object Character extends CYType {
 
-    override def name: String = "char"
+    override def name: String = "caractere"
   }
 
   case object Text extends CYType {
@@ -31,7 +31,7 @@ object CYType {
 
   case object Boolean extends CYType {
 
-    override def name: String = "boolean"
+    override def name: String = "booleen"
   }
   
   case object Void extends CYType {
@@ -43,4 +43,6 @@ object CYType {
 
     override def name: String = "unknown"
   }
+
+  val allTypes: List[CYType] = List(CYType.Integer, CYType.Real, CYType.Character, CYType.Text, CYType.Boolean)
 }

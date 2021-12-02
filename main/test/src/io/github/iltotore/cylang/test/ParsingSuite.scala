@@ -1,7 +1,7 @@
 package io.github.iltotore.cylang.test
 
+import io.github.iltotore.cylang.{CYType, Parameter}
 import utest.*
-
 import io.github.iltotore.cylang.ast.Value
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.parse.ExpressionParser.*
@@ -202,5 +202,41 @@ object ParsingSuite extends TestSuite {
       test("empty") - assertMatch(parseAll(expression, "foo()")) { case Success(FunctionCall("foo", List())) => }
       test("withArgs") - assertMatch(parseAll(expression, "max(1, 2)")) { case Success(FunctionCall("max", List(_, _))) => }
     }
+
+    test("cyType") {
+      test("valid") - assertMatch(parseAll(cyType, "entier")) { case Success(CYType.Integer) => }
+      test("unknown") - assertMatch(parseAll(cyType, "foo")) { case Failure(_, _) => }
+    }
+
+    test("param") - assertMatch(parseAll(param, "x: entier")) { case Success(Parameter("x", CYType.Integer)) => }
+
+    test("body") {
+      test("simple") - assertMatch(parseAll(
+        body,
+        """DEBUT
+          |ecrire(1)
+          |FIN""".stripMargin
+      )) { case Success(Body(List(), _)) =>}
+
+      test("withVariables") - assertMatch(parseAll(
+        body,
+        """VARIABLE
+          |x: entier
+          |y: caractere
+          |DEBUT
+          |ecrire(1)
+          |FIN""".stripMargin
+      )) { case Success(Body(List(_, _), _)) =>}
+    }
+
+    test("functionDeclaration") - assertMatch(parseAll(
+      functionDeclaration,
+      """FONCTION facto(x: entier): entier
+        |VARIABLE
+        |res: entier
+        |DEBUT
+        |ecrire(1)
+        |FIN""".stripMargin
+    )) { case Success(FunctionDeclaration("facto", CYType.Integer, List(_), _)) => }
   }
 }

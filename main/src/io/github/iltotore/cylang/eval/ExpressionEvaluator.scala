@@ -251,18 +251,18 @@ trait ExpressionEvaluator {
           Value.Void
         }
 
-        case VariablesDeclaration(variables) =>
+        /*case VariablesDeclaration(variables) =>
           Right((
             variables
               .foldLeft(context)((ctx, variable) => ctx.copy(scope = ctx.scope.withDeclaration(variable._1, variable._2, Value.Void))),
             Value.Void
-          ))
+          ))*/
 
-        case FunctionDeclaration(name, tpe, parameters, Body(VariablesDeclaration(variables), expression)) =>
+        case FunctionDeclaration(name, tpe, parameters, Body(variables, expression)) =>
           Right((
             context.copy(scope = context.scope.withFunction(
               name,
-              CYFunction.UserDefined(tpe, parameters, variables.map { case (k, v) => (k, (v, Value.Void)) }, expression)
+              CYFunction.UserDefined(tpe, parameters, variables.map(param => (param.name, (param.tpe, Value.Void))).toMap, expression)
             )),
             Value.Void
           ))

@@ -635,20 +635,14 @@ object EvaluationSuite extends TestSuite {
 
     }
 
-    test("variablesDecl") - assertMatch(
-      VariablesDeclaration(Map("x" -> CYType.Integer))
-        .evaluate
-        .map(_._1.scope.variables("x"))
-    ) { case Right(Variable(CYType.Integer, Value.Void, _)) => }
-
     test("functionDecl") - assertMatch(
       FunctionDeclaration(
         "facto",
         CYType.Integer,
         List(Parameter("x", CYType.Integer)),
         Body(
-          VariablesDeclaration(Map("res" -> CYType.Integer)),
-          Literal(Value.Integer(1))
+          List(Parameter("res", CYType.Integer)),
+          Empty
         )
       )
         .evaluate
