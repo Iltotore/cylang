@@ -8,6 +8,10 @@ import scala.util.parsing.combinator.*
 
 object ExpressionParser extends RegexParsers {
 
+  def program: Parser[ProgramDeclaration] = "PROGRAMME" ~> raw"\w+".r ~ rep(not(body) ~> functionDeclaration) ~ body ^^ {
+    case name ~ functions ~ main => ProgramDeclaration(name, functions, main)
+  }
+
   def expression: Parser[Expression] = variableAssignment
 
   def empty = success(Empty)
@@ -85,9 +89,9 @@ object ExpressionParser extends RegexParsers {
 
   def treeInvocable = forLoop | whileLoop | ifElse | treeReturn
 
-  def tree(end: Parser[?]) = rep(not(end) ~> (expression | treeInvocable)) <~ end ^^ Tree.apply
+  def tree(end: Parser[?]) = rep(not(end) ~> (treeInvocable | expression)) <~ end ^^ Tree.apply
 
-  def variableAssignment = equality | (raw"\w+".r ~ "<-" ~ equality ^^ { case name ~ _ ~ expr => VariableAssignment(name, expr) })
+  def variableAssignment = (raw"\w+".r ~ "<-" ~ equality ^^ { case name ~ _ ~ expr => VariableAssignment(name, expr) }) | equality
 
   def equality = inequality * ("!?=".r ^^ binaryOps.apply)
 

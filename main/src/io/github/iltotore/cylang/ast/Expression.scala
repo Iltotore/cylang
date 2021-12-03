@@ -62,5 +62,5 @@ object Expression {
 
   case class FunctionDeclaration(name: String, tpe: CYType, parameters: List[Parameter], body: Body) extends Expression
 
-  case class ProgramDeclaration(name: String, body: Body) extends Expression
+  case class ProgramDeclaration(name: String, functions: List[FunctionDeclaration], body: Body) extends Expression
 }

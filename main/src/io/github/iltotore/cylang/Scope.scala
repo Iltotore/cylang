@@ -20,7 +20,8 @@ case class Scope(depth: Int, functions: Map[String, CYFunction], variables: Map[
   def nested: Scope = this.copy(depth = this.depth + 1)
 
   def merged(scope: Scope): Scope = this.copy(
-    variables = this.variables ++ scope.variables.filter(_._2.depth <= this.depth)
+    variables = this.variables ++ scope.variables.filter(_._2.depth <= this.depth),
+    functions = this.functions ++ scope.functions
   )
 }
 
