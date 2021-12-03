@@ -266,6 +266,14 @@ trait ExpressionEvaluator {
             )),
             Value.Void
           ))
+
+        case ProgramDeclaration(name, functions, Body(variables, expression)) => eval {
+          for (function <- functions) evalUnbox(function)
+          println(currentContext.scope)
+          val scope = variables.foldLeft(currentContext.scope)((scope, param) => scope.withDeclaration(param.name, param.tpe, Value.Void))
+          update(currentContext.copy(scope = scope))
+          evalUnbox(expression)
+        }
       }
     }
   }

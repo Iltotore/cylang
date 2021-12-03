@@ -224,7 +224,9 @@ object ParsingSuite extends TestSuite {
           |x: entier
           |y: caractere
           |DEBUT
-          |ecrire(1)
+          |POUR i DE 0 A x FAIRE
+          |ecrire(x + i)
+          |FIN POUR
           |FIN""".stripMargin
       )) { case Success(Body(List(_, _), _)) =>}
     }
@@ -235,8 +237,75 @@ object ParsingSuite extends TestSuite {
         |VARIABLE
         |res: entier
         |DEBUT
-        |ecrire(1)
+        |res <- 1
+        |POUR i DE 0 A x FAIRE
+        |res = res + i
+        |FIN POUR
+        |RETOURNER res
         |FIN""".stripMargin
-    )) { case Success(FunctionDeclaration("facto", CYType.Integer, List(_), _)) => }
+    )) { case Success(FunctionDeclaration("facto", CYType.Integer, _, _)) => }
+
+    test("program") {
+
+      val expected = ProgramDeclaration(
+        name = "test",
+        functions = List(
+          FunctionDeclaration(
+            name = "facto",
+            tpe = CYType.Integer,
+            parameters = List(Parameter("x", CYType.Integer)),
+            body = Body(
+              variables = List(Parameter("res", CYType.Integer)),
+              expression = Tree(List(
+                VariableAssignment(
+                  name = "res",
+                  expression = Literal(Value.Integer(1))
+                ),
+                ForLoop(
+                  name = "i",
+                  from = Literal(Value.Integer(1)),
+                  to = Addition(VariableCall("x"), Literal(Value.Integer(1))),
+                  step = Literal(Value.Integer(1)),
+                  expression = Tree(List(
+                    VariableAssignment(
+                      name = "res",
+                      expression = Multiplication(VariableCall("res"), VariableCall("i"))
+                    )
+                  ))
+                ),
+                Return(VariableCall("res"))
+              ))
+            )
+          )
+        ),
+        body = Body(
+          variables = List.empty,
+          expression = Tree(List(
+            FunctionCall("ecrire", List(
+              FunctionCall("facto", List(Literal(Value.Integer(5)))))
+            )
+          ))
+        )
+      )
+
+      assertMatch(parseAll(
+        program,
+        """PROGRAMME test
+          |FONCTION facto(x: entier): entier
+          |VARIABLE
+          |res: entier
+          |DEBUT
+          |res <- 1
+          |POUR i DE 1 A x + 1 FAIRE
+          |res <- res * i
+          |FIN POUR
+          |RETOURNER res
+          |FIN
+          |
+          |DEBUT
+          |ecrire(facto(5))
+          |FIN""".stripMargin
+      )) { case Success(result) if result equals expected => }
+    }
   }
 }

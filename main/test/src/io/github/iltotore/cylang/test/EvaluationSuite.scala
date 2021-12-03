@@ -649,18 +649,22 @@ object EvaluationSuite extends TestSuite {
         .map(_._1.scope.functions("facto"))
     ) { case Right(CYFunction.UserDefined(CYType.Integer, List(Parameter("x", CYType.Integer)), _, _)) => }
 
-    test("global") {
+    test("program") {
 
-      given Context = Context(
-        Scope
-          .empty
-          .withFunction(
+      val program = ProgramDeclaration(
+        name = "test",
+        functions = List(
+          FunctionDeclaration(
             name = "factorial",
-            function = CYFunction(
-              tpe = CYType.Integer,
-              parameters = List(Parameter("x", CYType.Integer)),
-              variables = Map("result" -> (CYType.Integer, Value.Integer(1))),
+            tpe = CYType.Integer,
+            parameters = List(Parameter("x", CYType.Integer)),
+            body = Body(
+              variables = List(Parameter("result", CYType.Integer)),
               expression = Tree(List(
+                VariableAssignment(
+                  name = "result",
+                  expression = Literal(Value.Integer(1))
+                ),
                 ForLoop(
                   name = "i",
                   from = Literal(Value.Integer(1)),
@@ -674,12 +678,15 @@ object EvaluationSuite extends TestSuite {
                 Return(VariableCall("result"))
               ))
             )
-          ),
-        List.empty,
-        None
+          )
+        ),
+        body = Body(
+          variables = List.empty,
+          expression = FunctionCall("factorial", List(Literal(Value.Integer(5))))
+        )
       )
 
-      assertMatch(FunctionCall("factorial", List(Literal(Value.Integer(5)))).evaluate) {
+      assertMatch(program.evaluate) {
         case Right((_, Value.Integer(120))) =>
       }
     }
