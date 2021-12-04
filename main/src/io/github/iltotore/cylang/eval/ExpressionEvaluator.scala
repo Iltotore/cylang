@@ -251,13 +251,6 @@ trait ExpressionEvaluator {
           Value.Void
         }
 
-        /*case VariablesDeclaration(variables) =>
-          Right((
-            variables
-              .foldLeft(context)((ctx, variable) => ctx.copy(scope = ctx.scope.withDeclaration(variable._1, variable._2, Value.Void))),
-            Value.Void
-          ))*/
-
         case FunctionDeclaration(name, tpe, parameters, Body(variables, expression)) =>
           Right((
             context.copy(scope = context.scope.withFunction(
@@ -269,7 +262,6 @@ trait ExpressionEvaluator {
 
         case ProgramDeclaration(name, functions, Body(variables, expression)) => eval {
           for (function <- functions) evalUnbox(function)
-          println(currentContext.scope)
           val scope = variables.foldLeft(currentContext.scope)((scope, param) => scope.withDeclaration(param.name, param.tpe, Value.Void))
           update(currentContext.copy(scope = scope))
           evalUnbox(expression)
