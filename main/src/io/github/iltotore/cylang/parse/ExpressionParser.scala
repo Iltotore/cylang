@@ -63,7 +63,7 @@ object ExpressionParser extends RegexParsers {
     "<" -> Less.apply,
     "<=" -> LessEqual.apply,
     "+" -> Addition.apply,
-    "-" -> Substraction.apply,
+    "-" -> Subtraction.apply,
     "*" -> Multiplication.apply,
     "/" -> Division.apply,
     "DIV" -> WholeDivision.apply,

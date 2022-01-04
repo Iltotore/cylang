@@ -89,7 +89,7 @@ object EvaluationSuite extends TestSuite {
     test("substraction") {
 
       test("integer") - assertMatch(
-        Substraction(
+        Subtraction(
           Literal(Value.Integer(5)),
           Literal(Value.Integer(3))
         ).evaluate
@@ -97,21 +97,21 @@ object EvaluationSuite extends TestSuite {
 
       test("real") {
         test - assertMatch(
-          Substraction(
+          Subtraction(
             Literal(Value.Real(1.5)),
             Literal(Value.Real(2.5))
           ).evaluate
         ) { case Right((_, Value.Real(-1))) => }
 
         test - assertMatch(
-          Substraction(
+          Subtraction(
             Literal(Value.Integer(1)),
             Literal(Value.Real(2.5))
           ).evaluate
         ) { case Right((_, Value.Real(-1.5))) => }
 
         test - assertMatch(
-          Substraction(
+          Subtraction(
             Literal(Value.Real(2.5)),
             Literal(Value.Integer(1))
           ).evaluate

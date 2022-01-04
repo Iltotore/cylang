@@ -16,7 +16,7 @@ object Expression {
 
   case class Addition(left: Expression, right: Expression) extends Expression
 
-  case class Substraction(left: Expression, right: Expression) extends Expression
+  case class Subtraction(left: Expression, right: Expression) extends Expression
 
   case class Multiplication(left: Expression, right: Expression) extends Expression
 
