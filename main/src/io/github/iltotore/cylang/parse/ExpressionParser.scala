@@ -25,7 +25,7 @@ object ExpressionParser extends RegexParsers {
 
   def real: Parser[Literal] = raw"[0-9]+\.[0-9]+".r ^^ { x => Literal(Value.Real(x.toDouble)) }
 
-  def integer: Parser[Literal] = raw"[0-9]+".r ^^ { x => Literal(Value.Integer(x.toLong)) }
+  def integer: Parser[Literal] = raw"[0-9]+".r ^^ { x => Literal(Value.Integer(x.toInt)) }
 
   def literalSymbol = bool | text | character | real | integer
 

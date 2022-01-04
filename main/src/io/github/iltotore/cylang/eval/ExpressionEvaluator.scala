@@ -193,6 +193,31 @@ trait ExpressionEvaluator {
           } else abort(s"Unknown variable: $name")
         }
 
+        case ArrayCall(arrayExpr, index) => eval {
+          (evalUnbox(arrayExpr), evalUnbox(index)) match {
+
+            case (Value.Array(values), Value.Integer(i)) =>
+              if(values.length <= i) abort(s"Index $i out of ${values.length}-sized array")
+              if(i < 0) abort(s"Index can't be negative ($i)")
+              values(i)
+
+            case _ => ??
+          }
+        }
+
+        case ArrayAssignment(arrayExpr, index, expression) => eval {
+          (evalUnbox(arrayExpr), evalUnbox(index), evalUnbox(expression)) match {
+
+            case (Value.Array(values), Value.Integer(i), value) =>
+              if(values.length <= i) abort(s"Index $i out of ${values.length}-sized array")
+              if(i < 0) abort(s"Index can't be negative ($i)")
+              values(i) = value
+              Value.Void
+
+            case _ => ??
+          }
+        }
+
         case FunctionCall(name, args) => eval {
           val function = currentContext.scope.functions.getOrElse(name, abort(s"Unknown function: $name"))
           if (args.length != function.parameters.length)

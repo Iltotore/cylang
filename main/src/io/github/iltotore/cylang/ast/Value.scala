@@ -23,7 +23,7 @@ object Value {
     def unapply(number: Number): Tuple1[Double] = Tuple1(number.toDouble)
   }
 
-  case class Integer(value: Long) extends Number {
+  case class Integer(value: Int) extends Number {
 
     override val tpe: CYType = CYType.Integer
 
@@ -50,6 +50,11 @@ object Value {
   case class Bool(value: Boolean) extends Value {
 
     override def tpe: CYType = CYType.Boolean
+  }
+  
+  case class Array(value: scala.Array[Value]) extends Value {
+
+    override def tpe: CYType = CYType.Array(value.headOption.fold(CYType.Void)(_.tpe), Some(value.length))
   }
 
   case object Void extends Value {
