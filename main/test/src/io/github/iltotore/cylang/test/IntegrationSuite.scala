@@ -21,6 +21,7 @@ object IntegrationSuite extends TestSuite {
         |FONCTION facto(x: entier): entier
         |VARIABLE
         |  res: entier
+        |  i: entier
         |DEBUT
         |  res <- 1
         |  POUR i DE 1 A x + 1 FAIRE

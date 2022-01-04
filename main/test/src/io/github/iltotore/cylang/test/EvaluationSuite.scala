@@ -535,7 +535,10 @@ object EvaluationSuite extends TestSuite {
 
     test("forLoop") {
       given Context = Context(
-        Scope.empty.withDeclaration("x", CYType.Integer, Value.Integer(0)),
+        Scope
+          .empty
+          .withDeclaration("x", CYType.Integer, Value.Integer(0))
+          .withDeclaration("i", CYType.Integer, Value.Void),
         List.empty,
         None
       )
@@ -681,7 +684,9 @@ object EvaluationSuite extends TestSuite {
           )
         ),
         body = Body(
-          variables = List.empty,
+          variables = List(
+            Parameter("i", CYType.Integer)
+          ),
           expression = FunctionCall("factorial", List(Literal(Value.Integer(5))))
         )
       )

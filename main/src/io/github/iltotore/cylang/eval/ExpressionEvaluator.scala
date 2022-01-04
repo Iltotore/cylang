@@ -205,7 +205,7 @@ trait ExpressionEvaluator {
           (evalUnbox(from), evalUnbox(to), evalUnbox(step)) match {
 
             case (Value.Integer(x), Value.Integer(y), Value.Integer(s)) =>
-              update(currentContext.copy(scope = currentContext.scope.withDeclaration(name, CYType.Integer, Value.Integer(x))))
+              update(currentContext.copy(scope = currentContext.scope.withAssignment(name, Value.Integer(x))))
               for (i <- NumericRange(x, y, s)) {
                 update(currentContext.copy(scope = currentContext.scope.withAssignment(name, Value.Integer(i))))
                 evalUnbox(expression)
