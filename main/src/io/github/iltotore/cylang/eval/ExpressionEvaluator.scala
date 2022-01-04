@@ -44,7 +44,7 @@ trait ExpressionEvaluator {
           }
         }
 
-        case Substraction(left, right) => eval {
+        case Subtraction(left, right) => eval {
           (evalUnbox(left), evalUnbox(right)) match {
 
             case (Value.Integer(x), Value.Integer(y)) => Value.Integer(x - y)

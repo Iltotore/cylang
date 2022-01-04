@@ -63,7 +63,7 @@ object ParsingSuite extends TestSuite {
         }
 
         test("sub") {
-          test("valid") - assertMatch(parseAll(arith, "1 - 1")) { case Success(Substraction(_, _), _) => }
+          test("valid") - assertMatch(parseAll(arith, "1 - 1")) { case Success(Subtraction(_, _), _) => }
           test("unclosed") - assertMatch(parseAll(arith, "1 -")) { case Failure(_, _) => }
         }
 

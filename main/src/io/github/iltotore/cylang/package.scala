@@ -8,11 +8,12 @@ import io.github.iltotore.cylang.parse.ParsingException
 
 package object cylang {
 
-  def execute(source: String)(using context: Context = Context.empty): Either[ParsingException | EvaluationError, (Context, Value)] = parseAll(program, source) match {
+  def execute(source: String)(using context: Context = Context.empty): Either[ParsingException | EvaluationError, (Context, Value)] =
+    parseAll(program, source) match {
 
-    case Success(result, _) => result.evaluate
+      case Success(result, _) => result.evaluate
 
-    case Failure(msg, _) => Left(ParsingException(msg))
-  }
+      case Failure(msg, _) => Left(ParsingException(msg))
+    }
 
 }
