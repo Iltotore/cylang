@@ -46,6 +46,10 @@ object Expression {
 
   case class VariableAssignment(name: String, expression: Expression) extends Expression
 
+  case class ArrayCall(arrayExpr: Expression, index: Expression) extends Expression
+
+  case class ArrayAssignment(arrayExpr: Expression, index: Expression, expression: Expression) extends Expression
+
   case class FunctionCall(name: String, args: List[Expression]) extends Expression
 
   case class ForLoop(name: String, from: Expression, to: Expression, step: Expression, expression: Expression) extends Expression

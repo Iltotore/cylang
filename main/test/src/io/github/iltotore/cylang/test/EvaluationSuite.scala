@@ -505,6 +505,40 @@ object EvaluationSuite extends TestSuite {
       test("unknown") - assertMatch(VariableAssignment("b", Literal(Value.Integer(2))).evaluate) { case Left(_) => }
     }
 
+    test("arrayCall") {
+
+      val array = Literal(Value.Array(Array(Value.Character('a'), Value.Character('b'))))
+
+      test("inBounds") - assertMatch(ArrayCall(array, Literal(Value.Integer(1))).evaluate) { case Right((_, Value.Character('b'))) => }
+      test("outOfBounds") - assertMatch(ArrayCall(array, Literal(Value.Integer(2))).evaluate) { case Left(_) => }
+      test("negative") - assertMatch(ArrayCall(array, Literal(Value.Integer(-1))).evaluate) { case Left(_) => }
+    }
+
+    test("arrayAssignment") {
+      val array = Value.Array(Array(Value.Character('a'), Value.Character('b')))
+
+      given Context = Context(
+        Scope
+          .empty
+          .withDeclaration("array", CYType.Array(CYType.Character, None), array),
+        List.empty,
+        None
+      )
+
+      test("inBounds") - assertMatch(
+        ArrayAssignment(
+          Literal(array),
+          Literal(Value.Integer(1)),
+          Literal(Value.Character('c'))
+        )
+          .evaluate
+          .map(_._1.scope.variables("array").value)
+      ) { case Right(Value.Array(Array(Value.Character('a'), Value.Character('c')))) => }
+
+      test("outOfBounds") - assertMatch(ArrayAssignment(Literal(array), Literal(Value.Integer(2)), Literal(Value.Character('c'))).evaluate) { case Left(_) => }
+      test("negative") - assertMatch(ArrayAssignment(Literal(array), Literal(Value.Integer(-1)), Literal(Value.Character('c'))).evaluate) { case Left(_) => }
+    }
+
     test("functionCall") {
 
       given Context = Context(

@@ -33,6 +33,11 @@ object CYType {
 
     override def name: String = "booleen"
   }
+
+  case class Array(innerType: CYType, size: Option[Int]) extends CYType {
+
+    override def name: String = s"tableau de $innerType de taille ${size.getOrElse("inconnue")}"
+  }
   
   case object Void extends CYType {
 
