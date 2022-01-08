@@ -204,7 +204,11 @@ object ParsingSuite extends TestSuite {
     }
 
     test("cyType") {
-      test("valid") - assertMatch(parseAll(cyType, "entier")) { case Success(CYType.Integer) => }
+      test("raw") - assertMatch(parseAll(rawType, "entier")) { case Success(CYType.Integer) => }
+      test("array") {
+        test("unknownSize") - assertMatch(parseAll(arrayType, "tableau de type entier")) { case Success(CYType.Array(CYType.Integer, None)) => }
+        test("knownSize") - assertMatch(parseAll(arrayType, "tableau de type entier de taille 5")) { case Success(CYType.Array(CYType.Integer, Some(5))) => }
+      }
       test("unknown") - assertMatch(parseAll(cyType, "foo")) { case Failure(_, _) => }
     }
 

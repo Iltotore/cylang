@@ -38,12 +38,18 @@ object ExpressionParser extends RegexParsers {
     case name ~ args => FunctionCall(name, args)
   }
 
-  def cyType = raw"\w+".r flatMap (
+  def rawType = raw"\w+".r flatMap (
     name => CYType
-      .allTypes
+      .rawTypes
       .find(_.name equals name)
       .fold(failure(s"Unknown type: `$name`"))(success)
     )
+
+  def arrayType = "tableau de type" ~> cyType ~ ("de taille" ~> raw"[0-9]+".r).? ^^ {
+    case tpe ~ size => CYType.Array(tpe, size.map(_.toInt))
+  }
+
+  def cyType: Parser[CYType] = arrayType | rawType
 
   def param = raw"\w+".r ~ ":" ~ cyType ^^ { case name ~ ":" ~ tpe => Parameter(name, tpe) }
 
