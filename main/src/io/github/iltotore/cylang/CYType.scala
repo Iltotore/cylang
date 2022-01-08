@@ -49,5 +49,5 @@ object CYType {
     override def name: String = "unknown"
   }
 
-  val allTypes: List[CYType] = List(CYType.Integer, CYType.Real, CYType.Character, CYType.Text, CYType.Boolean)
+  val rawTypes: List[CYType] = List(CYType.Integer, CYType.Real, CYType.Character, CYType.Text, CYType.Boolean)
 }
