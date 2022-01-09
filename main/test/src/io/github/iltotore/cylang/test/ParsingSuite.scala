@@ -203,6 +203,10 @@ object ParsingSuite extends TestSuite {
       test("withArgs") - assertMatch(parseAll(expression, "max(1, 2)")) { case Success(FunctionCall("max", List(_, _))) => }
     }
 
+    test("arrayCall") - assertMatch(parseAll(arrayCall, "foo[5]")) { case Success(ArrayCall(_, Literal(Value.Integer(5)))) =>}
+
+    test("arrayAssignment") - assertMatch(parseAll(arrayAssignment, "foo[5] <- 2")) { case Success(ArrayAssignment(_, Literal(Value.Integer(5)), Literal(Value.Integer(2)))) =>}
+
     test("cyType") {
       test("raw") - assertMatch(parseAll(rawType, "entier")) { case Success(CYType.Integer) => }
       test("array") {
