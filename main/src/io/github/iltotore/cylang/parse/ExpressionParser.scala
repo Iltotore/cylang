@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang.parse
 
-import io.github.iltotore.cylang.{CYType, Parameter}
+import io.github.iltotore.cylang.{CYType, Parameter, execute}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Expression, Value}
 
@@ -99,6 +99,8 @@ object ExpressionParser extends RegexParsers {
 
   def variableAssignment = (raw"\w+".r ~ "<-" ~ equality ^^ { case name ~ _ ~ expr => VariableAssignment(name, expr) }) | equality
 
+  def arrayAssignment = invocable ~ ("[" ~> equality <~ "]") ~ "<-" ~ equality ^^ { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)} | equality
+
   def equality = inequality * ("!?=".r ^^ binaryOps.apply)
 
   def inequality = arith * ("[<>]=?".r ^^ binaryOps.apply)
@@ -113,11 +115,15 @@ object ExpressionParser extends RegexParsers {
     "!" -> Not.apply
   )
 
-  def unary = raw"[+\-!]".r.? ~ invocable ^^ {
+  def unary = raw"[+\-!]".r.? ~ arrayCall ^^ {
     case Some(op) ~ expr => unaryOps(op)(expr)
 
     case None ~ expr => expr
   }
+
+  def arrayCall = invocable ~ ("[" ~> expression <~ "]") ^^ {
+    case arrayExpr ~ index => ArrayCall(arrayExpr, index)
+  } | invocable
 
   def invocable = literalSymbol | paranthesized | functionCall | variableCall
 
