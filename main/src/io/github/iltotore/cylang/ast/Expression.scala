@@ -50,6 +50,10 @@ object Expression {
 
   case class ArrayAssignment(arrayExpr: Expression, index: Expression, expression: Expression) extends Expression
 
+  case class StructureCall(structureExpr: Expression, name: String) extends Expression
+  
+  case class StructureAssignment(structureExpr: Expression, name: String, expression: Expression) extends Expression
+  
   case class FunctionCall(name: String, args: List[Expression]) extends Expression
 
   case class ForLoop(name: String, from: Expression, to: Expression, step: Expression, expression: Expression) extends Expression
@@ -63,6 +67,8 @@ object Expression {
   case class Return(expression: Expression) extends Expression
 
   case class Body(variables: List[Parameter], expression: Expression)
+  
+  case class StructureDeclaration(name: String, fields: List[Parameter]) extends Expression
 
   case class FunctionDeclaration(name: String, tpe: CYType, parameters: List[Parameter], body: Body) extends Expression
 

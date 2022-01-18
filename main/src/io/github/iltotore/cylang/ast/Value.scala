@@ -1,6 +1,7 @@
 package io.github.iltotore.cylang.ast
 
-import io.github.iltotore.cylang.CYType
+import scala.collection.mutable
+import io.github.iltotore.cylang.{CYType, Variable}
 
 sealed trait Value {
 
@@ -55,6 +56,11 @@ object Value {
   case class Array(value: scala.Array[Value]) extends Value {
 
     override def tpe: CYType = CYType.Array(value.headOption.fold(CYType.Void)(_.tpe), Some(value.length))
+  }
+
+  case class StructureInstance(structure: Structure, value: mutable.Map[String, Variable]) extends Value {
+
+    override def tpe: CYType = CYType.StructureInstance(structure)
   }
 
   case object Void extends Value {

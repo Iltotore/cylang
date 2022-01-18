@@ -1,5 +1,7 @@
 package io.github.iltotore.cylang
 
+import ast.Structure
+
 sealed trait CYType {
   
   def name: String
@@ -37,6 +39,11 @@ object CYType {
   case class Array(innerType: CYType, size: Option[Int]) extends CYType {
 
     override def name: String = s"tableau de $innerType de taille ${size.getOrElse("inconnue")}"
+  }
+  
+  case class StructureInstance(structure: Structure) extends CYType {
+
+    override def name: String = s"structure ${structure.name}"
   }
   
   case object Void extends CYType {
