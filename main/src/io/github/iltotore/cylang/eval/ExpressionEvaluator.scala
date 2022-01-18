@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.eval
 
 import io.github.iltotore.cylang.{CYType, Context, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.ast.{CYFunction, Expression, Value}
+import io.github.iltotore.cylang.ast.{CYFunction, Expression, Structure, Value}
 
 import scala.collection.immutable.NumericRange
 
@@ -218,6 +218,29 @@ trait ExpressionEvaluator {
           }
         }
 
+        case StructureCall(structureExpr, name) => eval {
+          evalUnbox(structureExpr) match {
+
+            case Value.StructureInstance(structure, fields) =>
+              if(!structure.fields.exists(_.name equals name)) abort(s"Invalid field $name of structure ${structure.name}")
+              fields(name).value
+
+            case _ => ??
+          }
+        }
+
+        case StructureAssignment(structureExpr, name, expression) => eval {
+          (evalUnbox(structureExpr), evalUnbox(expression)) match {
+
+            case (Value.StructureInstance(structure, fields), value) =>
+              if(!structure.fields.exists(_.name equals name)) abort(s"Invalid field $name of structure ${structure.name}")
+              fields(name) = fields(name).copy(value = value)
+              Value.Void
+
+            case _ => ??
+          }
+        }
+
         case FunctionCall(name, args) => eval {
           val function = currentContext.scope.functions.getOrElse(name, abort(s"Unknown function: $name"))
           if (args.length != function.parameters.length)
@@ -275,6 +298,15 @@ trait ExpressionEvaluator {
           update(currentContext.copy(returned = Some(evalUnbox(expression))))
           Value.Void
         }
+
+        case StructureDeclaration(name, fields) =>
+          Right((
+            context.copy(scope = context.scope.withStructure(
+              name,
+              Structure(name, fields)
+            )),
+            Value.Void
+          ))
 
         case FunctionDeclaration(name, tpe, parameters, Body(variables, expression)) =>
           Right((

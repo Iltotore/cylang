@@ -1,13 +1,15 @@
 package io.github.iltotore.cylang
 
-import io.github.iltotore.cylang.ast.{CYFunction, Value}
+import io.github.iltotore.cylang.ast.{CYFunction, Structure, Value}
 
-case class Scope(depth: Int, functions: Map[String, CYFunction], variables: Map[String, Variable]) {
+case class Scope(depth: Int, structures: Map[String, Structure], functions: Map[String, CYFunction], variables: Map[String, Variable]) {
 
   def withVariable(name: String, variable: Variable): Scope = this.copy(variables = variables.updated(name, variable))
 
   def withFunction(name: String, function: CYFunction): Scope = this.copy(functions = functions.updated(name, function))
 
+  def withStructure(name: String, structure: Structure): Scope = this.copy(structures = structures.updated(name, structure))
+  
   def withDeclaration(name: String, tpe: CYType, value: Value): Scope = this.withVariable(name, Variable(tpe, value, depth))
   
   def withAssignment(name: String, value: Value): Scope = variables.get(name) match {
@@ -27,5 +29,5 @@ case class Scope(depth: Int, functions: Map[String, CYFunction], variables: Map[
 
 object Scope {
   
-  val empty: Scope = Scope(0, Map.empty, Map.empty)
+  val empty: Scope = Scope(0, Map.empty, Map.empty, Map.empty)
 }

@@ -1,5 +1,6 @@
 package io.github.iltotore.cylang.test
 
+import scala.collection.mutable
 import utest.*
 import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope, Variable}
 import io.github.iltotore.cylang.ast.*
@@ -539,6 +540,57 @@ object EvaluationSuite extends TestSuite {
       test("negative") - assertMatch(ArrayAssignment(Literal(array), Literal(Value.Integer(-1)), Literal(Value.Character('c'))).evaluate) { case Left(_) => }
     }
 
+    test("structureCall") {
+
+      val structure = Structure(
+        "Point",
+        List(
+          Parameter("x", CYType.Real),
+          Parameter("y", CYType.Real)
+        )
+      )
+
+      val instance = Literal(Value.StructureInstance(structure, mutable.Map(
+        "x" -> Variable(CYType.Real, Value.Real(0), 0),
+        "y" -> Variable(CYType.Real, Value.Real(0), 0)
+      )))
+
+      test("valid") - assertMatch(StructureCall(instance, "x").evaluate) { case Right((_, Value.Real(0))) => }
+      test("unknown") - assertMatch(StructureCall(instance, "z").evaluate) { case Left(_) => }
+    }
+
+    test("structureAssignment") {
+      val structure = Structure(
+        "Point",
+        List(
+          Parameter("x", CYType.Real),
+          Parameter("y", CYType.Real)
+        )
+      )
+
+      val instance = Value.StructureInstance(structure, mutable.Map(
+        "x" -> Variable(CYType.Real, Value.Real(0), 0),
+        "y" -> Variable(CYType.Real, Value.Real(0), 0)
+      ))
+
+      given Context = Context(
+        Scope
+          .empty
+          .withDeclaration("point", CYType.StructureInstance(structure), instance),
+        List.empty,
+        None
+      )
+
+
+      test("valid") - assertMatch(
+        StructureAssignment(Literal(instance), "x", Literal(Value.Real(1)))
+          .evaluate
+          .map(_._1.scope.variables("point").value)
+      ) { case Right(Value.StructureInstance(_, map)) if map("x").value equals Value.Real(1) => }
+
+      test("unknown") - assertMatch(StructureCall(Literal(instance), "z").evaluate) { case Left(_) => }
+    }
+
     test("functionCall") {
 
       given Context = Context(
@@ -671,6 +723,18 @@ object EvaluationSuite extends TestSuite {
       test - assertMatch(Tree(List(Literal(Value.Integer(0)))).evaluate) { case Right((_, Value.Void)) => }
 
     }
+
+    test("structureDecl") - assertMatch(
+      StructureDeclaration(
+        "Point",
+        List(
+          Parameter("x", CYType.Real),
+          Parameter("y", CYType.Real)
+        )
+      )
+        .evaluate
+        .map(_._1.scope.structures("Point"))
+    ) { case Right(Structure("Point", _)) => }
 
     test("functionDecl") - assertMatch(
       FunctionDeclaration(
