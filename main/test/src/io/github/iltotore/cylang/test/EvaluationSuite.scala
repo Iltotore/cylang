@@ -5,8 +5,7 @@ import utest.*
 import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope, Variable}
 import io.github.iltotore.cylang.ast.*
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.eval.*
-import io.github.iltotore.cylang.eval.given_Evaluator_Expression.evaluate
+import io.github.iltotore.cylang.eval.{*, given}
 
 object EvaluationSuite extends TestSuite {
 
@@ -542,15 +541,7 @@ object EvaluationSuite extends TestSuite {
 
     test("structureCall") {
 
-      val structure = Structure(
-        "Point",
-        List(
-          Parameter("x", CYType.Real),
-          Parameter("y", CYType.Real)
-        )
-      )
-
-      val instance = Literal(Value.StructureInstance(structure, mutable.Map(
+      val instance = Literal(Value.StructureInstance("Point", mutable.Map(
         "x" -> Variable(CYType.Real, Value.Real(0), 0),
         "y" -> Variable(CYType.Real, Value.Real(0), 0)
       )))
@@ -560,15 +551,8 @@ object EvaluationSuite extends TestSuite {
     }
 
     test("structureAssignment") {
-      val structure = Structure(
-        "Point",
-        List(
-          Parameter("x", CYType.Real),
-          Parameter("y", CYType.Real)
-        )
-      )
 
-      val instance = Value.StructureInstance(structure, mutable.Map(
+      val instance = Value.StructureInstance("Point", mutable.Map(
         "x" -> Variable(CYType.Real, Value.Real(0), 0),
         "y" -> Variable(CYType.Real, Value.Real(0), 0)
       ))
@@ -576,7 +560,7 @@ object EvaluationSuite extends TestSuite {
       given Context = Context(
         Scope
           .empty
-          .withDeclaration("point", CYType.StructureInstance(structure), instance),
+          .withDeclaration("point", CYType.StructureInstance("Point"), instance),
         List.empty,
         None
       )
@@ -754,7 +738,8 @@ object EvaluationSuite extends TestSuite {
 
       val program = ProgramDeclaration(
         name = "test",
-        functions = List(
+        structureDeclarations = List.empty,
+        functionDeclarations = List(
           FunctionDeclaration(
             name = "factorial",
             tpe = CYType.Integer,

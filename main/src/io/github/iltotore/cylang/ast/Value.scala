@@ -58,9 +58,9 @@ object Value {
     override def tpe: CYType = CYType.Array(value.headOption.fold(CYType.Void)(_.tpe), Some(value.length))
   }
 
-  case class StructureInstance(structure: Structure, value: mutable.Map[String, Variable]) extends Value {
+  case class StructureInstance(name: String, value: mutable.Map[String, Variable]) extends Value {
 
-    override def tpe: CYType = CYType.StructureInstance(structure)
+    override def tpe: CYType = CYType.StructureInstance(name)
   }
 
   case object Void extends Value {

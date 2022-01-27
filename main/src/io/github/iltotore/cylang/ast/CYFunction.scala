@@ -1,7 +1,6 @@
 package io.github.iltotore.cylang.ast
 
-import io.github.iltotore.cylang.eval.EvalResult
-import io.github.iltotore.cylang.eval.given_Evaluator_Expression.evaluate
+import io.github.iltotore.cylang.eval.{*, given}
 import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope}
 
 trait CYFunction {

@@ -1,7 +1,6 @@
 package io.github.iltotore.cylang.ast
 
 import io.github.iltotore.cylang.eval.EvaluationError
-import io.github.iltotore.cylang.util.*
 import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope, Variable}
 
 sealed trait Expression
@@ -72,5 +71,5 @@ object Expression {
 
   case class FunctionDeclaration(name: String, tpe: CYType, parameters: List[Parameter], body: Body) extends Expression
 
-  case class ProgramDeclaration(name: String, functions: List[FunctionDeclaration], body: Body) extends Expression
+  case class ProgramDeclaration(name: String, structureDeclarations: List[StructureDeclaration], functionDeclarations: List[FunctionDeclaration], body: Body) extends Expression
 }

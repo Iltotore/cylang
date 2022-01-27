@@ -203,9 +203,15 @@ object ParsingSuite extends TestSuite {
       test("withArgs") - assertMatch(parseAll(expression, "max(1, 2)")) { case Success(FunctionCall("max", List(_, _))) => }
     }
 
-    test("arrayCall") - assertMatch(parseAll(arrayCall, "foo[5]")) { case Success(ArrayCall(_, Literal(Value.Integer(5)))) =>}
+    test("arrayCall") - assertMatch(parseAll(unary, "foo[5]")) { case Success(ArrayCall(_, Literal(Value.Integer(5)))) =>}
+
+    test("structureCall") - assertMatch(parseAll(unary, "foo.x")){ case Success(StructureCall(VariableCall("foo"), "x")) => }
 
     test("arrayAssignment") - assertMatch(parseAll(arrayAssignment, "foo[5] <- 2")) { case Success(ArrayAssignment(_, Literal(Value.Integer(5)), Literal(Value.Integer(2)))) =>}
+
+    test("structureAssignment") - assertMatch(parseAll(expression, "foo.x <- 5")) {
+      case Success(StructureAssignment(VariableCall("foo"), "x", Literal(Value.Integer(5)))) =>
+    }
 
     test("cyType") {
       test("raw") - assertMatch(parseAll(rawType, "entier")) { case Success(CYType.Integer) => }
@@ -213,7 +219,7 @@ object ParsingSuite extends TestSuite {
         test("unknownSize") - assertMatch(parseAll(arrayType, "tableau de type entier")) { case Success(CYType.Array(CYType.Integer, None)) => }
         test("knownSize") - assertMatch(parseAll(arrayType, "tableau de type entier de taille 5")) { case Success(CYType.Array(CYType.Integer, Some(5))) => }
       }
-      test("unknown") - assertMatch(parseAll(cyType, "foo")) { case Failure(_, _) => }
+      test("structure") - assertMatch(parseAll(cyType, "foo")) { case Success(CYType.StructureInstance("foo")) => }
     }
 
     test("param") - assertMatch(parseAll(param, "x: entier")) { case Success(Parameter("x", CYType.Integer)) => }
@@ -239,6 +245,14 @@ object ParsingSuite extends TestSuite {
       )) { case Success(Body(List(_, _), _)) =>}
     }
 
+    test("structureDeclaration") - assertMatch(parseAll(
+      structureDeclaration,
+      """STRUCTURE Point
+        |x: entier
+        |y: entier
+        |FIN STRUCTURE""".stripMargin
+    )) { case Success(StructureDeclaration("Point", List(Parameter("x", CYType.Integer), Parameter("y", CYType.Integer)))) => }
+
     test("functionDeclaration") - assertMatch(parseAll(
       functionDeclaration,
       """FONCTION facto(x: entier): entier
@@ -257,7 +271,8 @@ object ParsingSuite extends TestSuite {
 
       val expected = ProgramDeclaration(
         name = "test",
-        functions = List(
+        structureDeclarations = List.empty,
+        functionDeclarations = List(
           FunctionDeclaration(
             name = "facto",
             tpe = CYType.Integer,

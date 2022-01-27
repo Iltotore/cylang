@@ -1,9 +1,8 @@
 package io.github.iltotore
 
 import io.github.iltotore.cylang.ast.Value
-import io.github.iltotore.cylang.eval.*
+import io.github.iltotore.cylang.eval.{*, given}
 import io.github.iltotore.cylang.parse.ExpressionParser.*
-import io.github.iltotore.cylang.eval.given_Evaluator_Expression.evaluate
 import io.github.iltotore.cylang.parse.ParsingException
 
 package object cylang {
