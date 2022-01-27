@@ -2,14 +2,14 @@ package io.github.iltotore.cylang.parse
 
 import io.github.iltotore.cylang.{CYType, Parameter, execute}
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.ast.{Expression, Value}
+import io.github.iltotore.cylang.ast.{Expression, Structure, Value}
 
 import scala.util.parsing.combinator.*
 
-object ExpressionParser extends RegexParsers {
+object ExpressionParser extends RegexParsers with CYParsers {
 
-  def program: Parser[ProgramDeclaration] = "PROGRAMME" ~> raw"\w+".r ~ rep(not(body) ~> functionDeclaration) ~ body ^^ {
-    case name ~ functions ~ main => ProgramDeclaration(name, functions, main)
+  def program: Parser[ProgramDeclaration] = "PROGRAMME" ~> raw"\w+".r ~ declarations ~ body ^^ {
+    case name ~ (structures & functions) ~ main => ProgramDeclaration(name, structures, functions, main)
   }
 
   def expression: Parser[Expression] = variableAssignment
@@ -38,11 +38,11 @@ object ExpressionParser extends RegexParsers {
     case name ~ args => FunctionCall(name, args)
   }
 
-  def rawType = raw"\w+".r flatMap (
+  def rawType = raw"\w+".r map (
     name => CYType
       .rawTypes
       .find(_.name equals name)
-      .fold(failure(s"Unknown type: `$name`"))(success)
+      .getOrElse(CYType.StructureInstance(name))
     )
 
   def arrayType = "tableau de type" ~> cyType ~ ("de taille" ~> raw"[0-9]+".r).? ^^ {
@@ -57,10 +57,16 @@ object ExpressionParser extends RegexParsers {
     case Some(variables) ~ "DEBUT" ~ expr => Body(variables, expr)
     case None ~ "DEBUT" ~ expr => Body(List.empty, expr)
   }
+
+  def structureDeclaration = "STRUCTURE" ~> raw"\w+".r ~ rep(not("FIN STRUCTURE") ~> param) <~ "FIN STRUCTURE" ^^ {
+    case name ~ fields => StructureDeclaration(name, fields)
+  }
   
   def functionDeclaration = "FONCTION" ~> raw"\w+".r ~ ("(" ~> repsep(param, ",") <~ ")") ~ ":" ~ cyType ~ body ^^ {
     case name ~ params ~ ":" ~ tpe ~ b => FunctionDeclaration(name, tpe, params, b)
   }
+
+  def declarations = rep(not(body) ~> (structureDeclaration \ functionDeclaration)) & rep(not(body) ~> (functionDeclaration \ structureDeclaration))
 
   private val binaryOps: Map[String, (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
@@ -97,9 +103,11 @@ object ExpressionParser extends RegexParsers {
 
   def tree(end: Parser[?]) = rep(not(end) ~> (treeInvocable | expression)) <~ end ^^ Tree.apply
 
-  def variableAssignment = (raw"\w+".r ~ "<-" ~ equality ^^ { case name ~ _ ~ expr => VariableAssignment(name, expr) }) | equality
+  def variableAssignment = (raw"\w+".r ~ "<-" ~ equality ^^ { case name ~ _ ~ expr => VariableAssignment(name, expr) }) | arrayAssignment
 
-  def arrayAssignment = invocable ~ ("[" ~> equality <~ "]") ~ "<-" ~ equality ^^ { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)} | equality
+  def arrayAssignment = invocable ~ ("[" ~> equality <~ "]") ~ "<-" ~ equality ^^ { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)} | structureAssignment
+
+  def structureAssignment = invocable ~ ("." ~> raw"\w+".r) ~ "<-" ~ equality ^^ { case structure ~ field ~ _ ~ expr => StructureAssignment(structure, field, expr) } | equality
 
   def equality = inequality * ("!?=".r ^^ binaryOps.apply)
 
@@ -115,15 +123,17 @@ object ExpressionParser extends RegexParsers {
     "!" -> Not.apply
   )
 
-  def unary = raw"[+\-!]".r.? ~ arrayCall ^^ {
+  def unary = raw"[+\-!]".r.? ~ (invocable >> (left => furtherCall(left) | success(left))) ^^ {
     case Some(op) ~ expr => unaryOps(op)(expr)
 
     case None ~ expr => expr
   }
 
-  def arrayCall = invocable ~ ("[" ~> expression <~ "]") ^^ {
-    case arrayExpr ~ index => ArrayCall(arrayExpr, index)
-  } | invocable
+  def furtherCall(expr: Expression): Parser[Expression] = (arrayCall(expr) | structureCall(expr)) >> (left => furtherCall(left) | success(left))
+
+  def arrayCall(expr: Expression): Parser[Expression] = ("[" ~> expression <~ "]") ^^ (ArrayCall(expr, _))
+
+  def structureCall(expr: Expression): Parser[Expression] = ("." ~> raw"\w+".r) ^^ (StructureCall(expr, _))
 
   def invocable = literalSymbol | paranthesized | functionCall | variableCall
 

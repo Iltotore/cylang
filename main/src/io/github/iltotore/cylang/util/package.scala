@@ -1,8 +1,9 @@
 package io.github.iltotore.cylang
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
 
-package object util {
+package object util extends EitherCapability {
 
   extension[A, B] (either: Either[A, B]) {
 
@@ -14,17 +15,5 @@ package object util {
 
       case (_, Left(y)) => Left(y)
     }
-  }
-
-  extension[A, B] (list: List[Either[A, B]]) {
-
-    def failFast: Either[A, List[B]] = Right(
-      for (either <- list) yield either match {
-
-        case Right(value) => value
-
-        case Left(value) => return Left(value)
-      }
-    )
   }
 }

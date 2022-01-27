@@ -3,13 +3,20 @@ package io.github.iltotore.cylang
 import scala.util.{Failure, Success, Try}
 import io.github.iltotore.cylang.ast.{Expression, Value}
 
-package object eval extends ExpressionEvaluator {
-
-  case class EvalDSL(var context: Context)
+package object eval {
 
   type EvalResult = Either[EvaluationError, (Context, Value)]
 
   type Evaluation = Context ?=> EvalResult
+
+  given Evaluator[Expression] = new ExpressionEvaluator
+
+  extension [A](input: A)(using evaluator: Evaluator[A]) {
+
+    def evaluate(using Context) = evaluator.evaluate(input)
+  }
+
+  case class EvalDSL(var context: Context)
 
   def eval(ev: EvalDSL ?=> Value)(using context: Context): EvalResult = {
     val dsl = EvalDSL(context)

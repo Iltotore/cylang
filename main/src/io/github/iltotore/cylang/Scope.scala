@@ -23,6 +23,7 @@ case class Scope(depth: Int, structures: Map[String, Structure], functions: Map[
 
   def merged(scope: Scope): Scope = this.copy(
     variables = this.variables ++ scope.variables.filter(_._2.depth <= this.depth),
+    structures = this.structures ++ scope.structures,
     functions = this.functions ++ scope.functions
   )
 }
