@@ -66,12 +66,14 @@ object Expression {
   case class Return(expression: Expression) extends Expression
 
   case class Body(variables: List[Parameter], expression: Expression)
-
-  case class EnumerationDeclaration(name: String, fields: List[String]) extends Expression
   
-  case class StructureDeclaration(name: String, fields: List[Parameter]) extends Expression
+  sealed trait Declaration extends Expression
 
-  case class FunctionDeclaration(name: String, tpe: CYType, parameters: List[Parameter], body: Body) extends Expression
+  case class EnumerationDeclaration(name: String, fields: List[String]) extends Declaration
+  
+  case class StructureDeclaration(name: String, fields: List[Parameter]) extends Declaration
 
-  case class ProgramDeclaration(name: String, structureDeclarations: List[StructureDeclaration], functionDeclarations: List[FunctionDeclaration], body: Body) extends Expression
+  case class FunctionDeclaration(name: String, tpe: CYType, parameters: List[Parameter], body: Body) extends Declaration
+
+  case class ProgramDeclaration(name: String, declarations: List[Declaration], body: Body) extends Expression
 }
