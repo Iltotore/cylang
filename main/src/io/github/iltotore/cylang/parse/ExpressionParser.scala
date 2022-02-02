@@ -8,8 +8,8 @@ import scala.util.parsing.combinator.*
 
 object ExpressionParser extends RegexParsers with CYParsers {
 
-  def program: Parser[ProgramDeclaration] = "PROGRAMME" ~> raw"\w+".r ~ declarations ~ body ^^ {
-    case name ~ (structures & functions) ~ main => ProgramDeclaration(name, structures, functions, main)
+  def program: Parser[ProgramDeclaration] = "PROGRAMME" ~> raw"\w+".r ~ rep(not(body) ~> declaration) ~ body ^^ {
+    case name ~ declarations ~ main => ProgramDeclaration(name, declarations, main)
   }
 
   def expression: Parser[Expression] = variableAssignment
@@ -58,15 +58,19 @@ object ExpressionParser extends RegexParsers with CYParsers {
     case None ~ "DEBUT" ~ expr => Body(List.empty, expr)
   }
 
+  def enumerationDeclaration = "ENUMERATION" ~> raw"\w+".r ~ rep(not("FIN ENUMERATION") ~> ",".? ~> raw"\w+".r) <~ "FIN ENUMERATION" ^^ {
+    case name ~ fields => EnumerationDeclaration(name, fields)
+  }
+
   def structureDeclaration = "STRUCTURE" ~> raw"\w+".r ~ rep(not("FIN STRUCTURE") ~> param) <~ "FIN STRUCTURE" ^^ {
     case name ~ fields => StructureDeclaration(name, fields)
   }
-  
+
   def functionDeclaration = "FONCTION" ~> raw"\w+".r ~ ("(" ~> repsep(param, ",") <~ ")") ~ ":" ~ cyType ~ body ^^ {
     case name ~ params ~ ":" ~ tpe ~ b => FunctionDeclaration(name, tpe, params, b)
   }
 
-  def declarations = rep(not(body) ~> (structureDeclaration \ functionDeclaration)) & rep(not(body) ~> (functionDeclaration \ structureDeclaration))
+  def declaration = enumerationDeclaration | structureDeclaration | functionDeclaration
 
   private val binaryOps: Map[String, (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,

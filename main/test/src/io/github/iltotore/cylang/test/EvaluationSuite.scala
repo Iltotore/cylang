@@ -759,8 +759,7 @@ object EvaluationSuite extends TestSuite {
 
       val program = ProgramDeclaration(
         name = "test",
-        structureDeclarations = List.empty,
-        functionDeclarations = List(
+        declarations = List(
           FunctionDeclaration(
             name = "factorial",
             tpe = CYType.Integer,
