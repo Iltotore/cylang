@@ -499,7 +499,7 @@ object EvaluationSuite extends TestSuite {
             .evaluate
             .map(_._1.scope.variables("a"))
 
-        assertMatch(result) { case Right(Variable(CYType.Integer, Value.Integer(2), _)) => }
+        assertMatch(result) { case Right(Variable(CYType.Integer, Value.Integer(2), _, _)) => }
       }
 
       test("unknown") - assertMatch(VariableAssignment("b", Literal(Value.Integer(2))).evaluate) { case Left(_) => }
@@ -542,8 +542,8 @@ object EvaluationSuite extends TestSuite {
     test("structureCall") {
 
       val instance = Literal(Value.StructureInstance("Point", mutable.Map(
-        "x" -> Variable(CYType.Real, Value.Real(0), 0),
-        "y" -> Variable(CYType.Real, Value.Real(0), 0)
+        "x" -> Variable(CYType.Real, Value.Real(0), true, 0),
+        "y" -> Variable(CYType.Real, Value.Real(0), true, 0)
       )))
 
       test("valid") - assertMatch(StructureCall(instance, "x").evaluate) { case Right((_, Value.Real(0))) => }
@@ -553,8 +553,8 @@ object EvaluationSuite extends TestSuite {
     test("structureAssignment") {
 
       val instance = Value.StructureInstance("Point", mutable.Map(
-        "x" -> Variable(CYType.Real, Value.Real(0), 0),
-        "y" -> Variable(CYType.Real, Value.Real(0), 0)
+        "x" -> Variable(CYType.Real, Value.Real(0), true, 0),
+        "y" -> Variable(CYType.Real, Value.Real(0), true, 0)
       ))
 
       given Context = Context(
@@ -628,7 +628,7 @@ object EvaluationSuite extends TestSuite {
           )
         ).evaluate
 
-      assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _)) => }
+      assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _, _)) => }
     }
 
     test("whileLoop") {
@@ -662,7 +662,7 @@ object EvaluationSuite extends TestSuite {
         ))
       ).evaluate
 
-      assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _)) => }
+      assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _, _)) => }
     }
 
     test("if") {
@@ -682,15 +682,15 @@ object EvaluationSuite extends TestSuite {
       )
 
       test - assertMatch(ast(true, Empty).evaluate.map(_._1.scope.variables("x"))) {
-        case Right(Variable(CYType.Integer, Value.Integer(1), _)) =>
+        case Right(Variable(CYType.Integer, Value.Integer(1), _, _)) =>
       }
 
       test - assertMatch(ast(false, Empty).evaluate.map(_._1.scope.variables("x"))) {
-        case Right(Variable(CYType.Integer, Value.Integer(0), _)) =>
+        case Right(Variable(CYType.Integer, Value.Integer(0), _, _)) =>
       }
 
       test - assertMatch(ast(false, VariableAssignment("x", Literal(Value.Integer(-1)))).evaluate.map(_._1.scope.variables("x"))) {
-        case Right(Variable(CYType.Integer, Value.Integer(-1), _)) =>
+        case Right(Variable(CYType.Integer, Value.Integer(-1), _, _)) =>
       }
     }
 
@@ -706,6 +706,27 @@ object EvaluationSuite extends TestSuite {
 
       test - assertMatch(Tree(List(Literal(Value.Integer(0)))).evaluate) { case Right((_, Value.Void)) => }
 
+    }
+
+    test("enumerationDecl") {
+
+      test("type") - assertMatch(
+        EnumerationDeclaration(
+          "Color",
+          List("RED", "GREEN", "BLUE")
+        )
+          .evaluate
+          .map(_._1.scope.enumerations("Color"))
+      ) { case Right(Enumeration("Color", _)) => }
+
+      test("fields") - assertMatch(
+        EnumerationDeclaration(
+          "Color",
+          List("RED", "GREEN", "BLUE")
+        )
+          .evaluate
+          .map(_._1.scope.variables("RED"))
+      ) { case Right(Variable(CYType.EnumerationField("Color"), Value.EnumerationField("Color", "RED"), false, _)) => }
     }
 
     test("structureDecl") - assertMatch(

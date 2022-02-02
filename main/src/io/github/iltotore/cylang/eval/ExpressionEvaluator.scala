@@ -2,7 +2,8 @@ package io.github.iltotore.cylang.eval
 
 import io.github.iltotore.cylang.{CYType, Context, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.ast.{CYFunction, Expression, Structure, Value}
+import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Expression, Structure, Value}
+import io.github.iltotore.cylang.util.*
 
 import scala.collection.immutable.NumericRange
 
@@ -175,18 +176,13 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       .toRight(EvaluationError(s"Unknown variable: $name"))
 
     case VariableAssignment(name, expression) => eval {
-      val variables = currentContext
-        .scope
-        .variables
 
-      if (variables.contains(name)) {
-        update(
-          currentContext.copy(
-            scope = currentContext.scope.withAssignment(name, evalUnbox(expression))
-          )
+      update(
+        currentContext.copy(
+          scope = currentContext.scope.withAssignment(name, evalUnbox(expression)).orThrowLeft
         )
-        Value.Void
-      } else abort(s"Unknown variable: $name")
+      )
+      Value.Void
     }
 
     case ArrayCall(arrayExpr, index) => eval {
@@ -218,7 +214,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       evalUnbox(structureExpr) match {
 
         case Value.StructureInstance(structName, fields) =>
-          if(!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
+          if (!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
           fields(name).value
 
         case _ => ??
@@ -229,7 +225,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       (evalUnbox(structureExpr), evalUnbox(expression)) match {
 
         case (Value.StructureInstance(structName, fields), value) =>
-          if(!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
+          if (!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
           fields(name) = fields(name).copy(value = value)
           Value.Void
 
@@ -249,9 +245,9 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       (evalUnbox(from), evalUnbox(to), evalUnbox(step)) match {
 
         case (Value.Integer(x), Value.Integer(y), Value.Integer(s)) =>
-          update(currentContext.copy(scope = currentContext.scope.withAssignment(name, Value.Integer(x))))
+          update(currentContext.copy(scope = currentContext.scope.withAssignment(name, Value.Integer(x)).orThrowLeft))
           for (i <- NumericRange(x, y, s)) {
-            update(currentContext.copy(scope = currentContext.scope.withAssignment(name, Value.Integer(i))))
+            update(currentContext.copy(scope = currentContext.scope.withAssignment(name, Value.Integer(i)).orThrowLeft))
             evalUnbox(expression)
           }
           Value.Void
@@ -295,6 +291,18 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       Value.Void
     }
 
+    case EnumerationDeclaration(name, fields) =>
+      Right((
+        context.copy(scope = fields
+          .foldLeft(context.scope)((scope, field) =>
+            scope
+              .withDeclaration(field, CYType.EnumerationField(name), Value.EnumerationField(name, field), false)
+          )
+          .withEnumeration(name, Enumeration(name, fields))
+        ),
+        Value.Void
+      ))
+
     case StructureDeclaration(name, fields) =>
       Right((
         context.copy(scope = context.scope.withStructure(
@@ -317,7 +325,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       structureDeclarations.foreach(evalUnbox)
       functionDeclarations.foreach(evalUnbox)
       val scope = variables.foldLeft(currentContext.scope)((scope, param) => param.tpe.defaultValue(using currentContext) match {
-        case Right(value) => scope.withDeclaration (param.name, param.tpe, value)
+        case Right(value) => scope.withDeclaration(param.name, param.tpe, value)
         case Left(err) => throw err
       })
       update(currentContext.copy(scope = scope))

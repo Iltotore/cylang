@@ -66,6 +66,8 @@ object Expression {
   case class Return(expression: Expression) extends Expression
 
   case class Body(variables: List[Parameter], expression: Expression)
+
+  case class EnumerationDeclaration(name: String, fields: List[String]) extends Expression
   
   case class StructureDeclaration(name: String, fields: List[Parameter]) extends Expression
 

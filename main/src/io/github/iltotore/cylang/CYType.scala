@@ -63,13 +63,24 @@ object CYType {
     }
   }
 
+  case class EnumerationField(enumName: String) extends CYType {
+
+    override def name: String = s"enumeration $enumName"
+
+    override def defaultValue(using context: Context): Either[EvaluationError, Value] =
+      for {
+        enumeration <- context.scope.enumerations.get(enumName).toRight(EvaluationError(s"Unknown enumeration: $enumName"))
+        field <- enumeration.fields.headOption.toRight(EvaluationError(s"Enumeration $enumName cannot be empty"))
+      } yield Value.EnumerationField(enumName, field)
+  }
+
   case class StructureInstance(structName: String) extends CYType {
 
     override def name: String = s"structure $structName"
 
     override def defaultValue(using context: Context): Either[EvaluationError, Value] = either {
       val structure = ensureOption(context.scope.structures.get(structName))(EvaluationError(s"Unknown structure $structName"))
-      val values = for(field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), 0))
+      val values = for(field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), true, 0))
       Value.StructureInstance(structName, mutable.Map.from(values))
     }
   }
