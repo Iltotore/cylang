@@ -16,4 +16,13 @@ package object util extends EitherCapability {
       case (_, Left(y)) => Left(y)
     }
   }
+
+  extension[A <: Throwable, B](either: Either[A, B]) {
+
+    def orThrowLeft: B = either match {
+
+      case Right(value) => value
+      case Left(throwable) => throw throwable
+    }
+  }
 }

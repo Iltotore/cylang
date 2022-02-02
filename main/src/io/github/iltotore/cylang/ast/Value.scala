@@ -58,6 +58,11 @@ object Value {
     override def tpe: CYType = CYType.Array(value.headOption.fold(CYType.Void)(_.tpe), Some(value.length))
   }
 
+  case class EnumerationField(name: String, value: String) extends Value {
+
+    override def tpe: CYType = CYType.EnumerationField(name)
+  }
+
   case class StructureInstance(name: String, value: mutable.Map[String, Variable]) extends Value {
 
     override def tpe: CYType = CYType.StructureInstance(name)
