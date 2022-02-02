@@ -245,6 +245,14 @@ object ParsingSuite extends TestSuite {
       )) { case Success(Body(List(_, _), _)) =>}
     }
 
+    test("enumerationDeclaration") - assertMatch(parseAll(
+      enumerationDeclaration,
+      """ENUMERATION Couleur
+        |  BLEU, ROUGE, VERT
+        |FIN ENUMERATION
+        |""".stripMargin
+    )) { case Success(EnumerationDeclaration("Couleur", List("BLEU", "ROUGE", "VERT"))) => }
+
     test("structureDeclaration") - assertMatch(parseAll(
       structureDeclaration,
       """STRUCTURE Point
@@ -271,8 +279,7 @@ object ParsingSuite extends TestSuite {
 
       val expected = ProgramDeclaration(
         name = "test",
-        structureDeclarations = List.empty,
-        functionDeclarations = List(
+        declarations = List(
           FunctionDeclaration(
             name = "facto",
             tpe = CYType.Integer,
