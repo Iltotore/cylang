@@ -321,9 +321,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
         Value.Void
       ))
 
-    case ProgramDeclaration(name, structureDeclarations, functionDeclarations, Body(variables, expression)) => eval {
-      structureDeclarations.foreach(evalUnbox)
-      functionDeclarations.foreach(evalUnbox)
+    case ProgramDeclaration(name, declarations, Body(variables, expression)) => eval {
+      declarations.foreach(evalUnbox)
       val scope = variables.foldLeft(currentContext.scope)((scope, param) => param.tpe.defaultValue(using currentContext) match {
         case Right(value) => scope.withDeclaration(param.name, param.tpe, value)
         case Left(err) => throw err
