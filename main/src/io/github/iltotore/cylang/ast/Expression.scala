@@ -68,6 +68,8 @@ object Expression {
   case class Body(variables: List[Parameter], expression: Expression)
   
   sealed trait Declaration extends Expression
+  
+  case class ConstantDeclaration(name: String, tpe: CYType, expression: Expression) extends Declaration
 
   case class EnumerationDeclaration(name: String, fields: List[String]) extends Declaration
   

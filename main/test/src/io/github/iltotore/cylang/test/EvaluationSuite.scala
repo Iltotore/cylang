@@ -708,6 +708,16 @@ object EvaluationSuite extends TestSuite {
 
     }
 
+    test("constantDecl") - assertMatch(
+      ConstantDeclaration(
+        "TEST",
+        CYType.Integer,
+        Literal(Value.Integer(1))
+      )
+        .evaluate
+        .map(_._1.scope.variables("TEST"))
+    ) { case Right(Variable(CYType.Integer, Value.Integer(1), false, _)) => }
+
     test("enumerationDecl") {
 
       test("type") - assertMatch(
