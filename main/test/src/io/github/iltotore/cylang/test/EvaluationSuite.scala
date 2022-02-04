@@ -711,7 +711,6 @@ object EvaluationSuite extends TestSuite {
     test("constantDecl") - assertMatch(
       ConstantDeclaration(
         "TEST",
-        CYType.Integer,
         Literal(Value.Integer(1))
       )
         .evaluate

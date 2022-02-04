@@ -291,10 +291,11 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       Value.Void
     }
 
-    case ConstantDeclaration(name, tpe, expression) => eval {
+    case ConstantDeclaration(name, expression) => eval {
+      val value = evalUnbox(expression)
       update(
         currentContext.copy(
-          scope = currentContext.scope.withDeclaration(name, tpe, evalUnbox(expression), false)
+          scope = currentContext.scope.withDeclaration(name, value.tpe, value, false)
         )
       )
       Value.Void

@@ -69,7 +69,7 @@ object Expression {
   
   sealed trait Declaration extends Expression
   
-  case class ConstantDeclaration(name: String, tpe: CYType, expression: Expression) extends Declaration
+  case class ConstantDeclaration(name: String, expression: Expression) extends Declaration
 
   case class EnumerationDeclaration(name: String, fields: List[String]) extends Declaration
   
