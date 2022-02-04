@@ -58,6 +58,8 @@ object ExpressionParser extends RegexParsers with CYParsers {
     case None ~ "DEBUT" ~ expr => Body(List.empty, expr)
   }
 
+  def constantDeclaration = "CONSTANTE" ~> raw"\w+".r ~ "<-" ~ expression ^^ { case name ~ _ ~ expr => ConstantDeclaration(name, expr) }
+
   def enumerationDeclaration = "ENUMERATION" ~> raw"\w+".r ~ rep(not("FIN ENUMERATION") ~> ",".? ~> raw"\w+".r) <~ "FIN ENUMERATION" ^^ {
     case name ~ fields => EnumerationDeclaration(name, fields)
   }
@@ -70,7 +72,7 @@ object ExpressionParser extends RegexParsers with CYParsers {
     case name ~ params ~ ":" ~ tpe ~ b => FunctionDeclaration(name, tpe, params, b)
   }
 
-  def declaration = enumerationDeclaration | structureDeclaration | functionDeclaration
+  def declaration = constantDeclaration | enumerationDeclaration | structureDeclaration | functionDeclaration
 
   private val binaryOps: Map[String, (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
