@@ -244,6 +244,8 @@ object ParsingSuite extends TestSuite {
           |FIN""".stripMargin
       )) { case Success(Body(List(_, _), _)) =>}
     }
+    
+    test("constantDeclaration") - assertMatch(parseAll(constantDeclaration, "CONSTANTE TEST <- 10")) { case Success(ConstantDeclaration("TEST", Literal(Value.Integer(10)))) => }
 
     test("enumerationDeclaration") - assertMatch(parseAll(
       enumerationDeclaration,
