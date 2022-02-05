@@ -13,6 +13,8 @@ package object cylang {
       case Success(result, _) => result.evaluate
 
       case Failure(msg, _) => Left(ParsingException(msg))
+
+      case Error(msg, _) => Left(ParsingException(msg))
     }
 
 }
