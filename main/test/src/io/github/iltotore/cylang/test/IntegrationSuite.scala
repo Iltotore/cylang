@@ -4,13 +4,13 @@ import utest.*
 import io.github.iltotore.cylang.{Context, execute}
 import io.github.iltotore.cylang.ast.Value
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.parse.ExpressionParser.*
-import io.github.iltotore.cylang.eval.*
-import io.github.iltotore.cylang.eval.given_Evaluator_Expression.evaluate
+import io.github.iltotore.cylang.eval.given
 
 object IntegrationSuite extends TestSuite {
 
   val tests: Tests = Tests {
+
+    given Context = Context.empty
 
     test("factorial") {
 
