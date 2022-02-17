@@ -11,14 +11,14 @@ trait CYFunction {
 
   def variables: Map[String, (CYType, Value)]
 
-  def evaluate(args: List[Value])(using context: Context): EvalResult = {
+  def evaluate(args: List[Value])(using context: Context, evaluator: Evaluator[Expression]): EvalResult = {
     var scope: Scope = context.scope
     for ((param, arg) <- parameters.zip(args)) scope = scope.withDeclaration(param.name, param.tpe, arg)
     for ((name, (tpe, value)) <- variables) scope = scope.withDeclaration(name, tpe, value)
     execute(using context.copy(scope = scope))
   }
 
-  def execute(using Context): EvalResult
+  def execute(using Context, Evaluator[Expression]): EvalResult
 
 }
 
@@ -31,7 +31,7 @@ object CYFunction {
                           expression: Expression
                         ) extends CYFunction {
 
-    override def execute(using Context): EvalResult = expression.evaluate
+    override def execute(using Context, Evaluator[Expression]): EvalResult = expression.evaluate
   }
 
   case class Builtin(
@@ -41,7 +41,7 @@ object CYFunction {
                       function: Context => EvalResult
                     ) extends CYFunction {
 
-    override def execute(using context: Context): EvalResult = function(context)
+    override def execute(using context: Context, evaluator: Evaluator[Expression]): EvalResult = function(context)
   }
 
   def apply(
