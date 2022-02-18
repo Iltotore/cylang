@@ -100,6 +100,8 @@ object ExpressionParser extends RegexParsers with CYParsers {
 
   def whileLoop: Parser[WhileLoop] = "TANT QUE" ~> expression ~ "FAIRE" ~ tree("FIN TANT QUE") ^^ { case cond ~ _ ~ expr => WhileLoop(cond, expr) }
 
+  def doWhileLoop: Parser[DoWhileLoop] = "FAIRE" ~> tree("TANT QUE") ~ expression ^^ { case expr ~ cond => DoWhileLoop(cond, expr)}
+  
   def ifElse: Parser[If] = "SI" ~> expression ~ "FAIRE" ~ ifBody ^^ {
     case cond ~ _ ~ (expr ~ elseExpr) => If(cond, expr, elseExpr)
   }
@@ -108,7 +110,7 @@ object ExpressionParser extends RegexParsers with CYParsers {
 
   def treeReturn: Parser[Expression] = "RETOURNER" ~> expression ^^ Return.apply
 
-  def treeInvocable: Parser[Expression] = forLoop | whileLoop | ifElse | treeReturn
+  def treeInvocable: Parser[Expression] = forLoop | whileLoop | doWhileLoop | ifElse | treeReturn
 
   def tree(end: Parser[?]) = rep(not(end) ~> (treeInvocable | expression)) <~ end ^^ Tree.apply
 

@@ -162,9 +162,18 @@ object ParsingSuite extends TestSuite {
       assertMatch(parseAll(
         whileLoop,
         """TANT QUE true FAIRE
-          |ecrire(1)
+          |ECRIRE(1)
           |FIN TANT QUE""".stripMargin
       )) { case Success(WhileLoop(Literal(_), Tree(List(_)))) => }
+    }
+
+    test("doWhileLoop") {
+      assertMatch(parseAll(
+        doWhileLoop,
+        """FAIRE
+          |ECRIRE(1)
+          |TANT QUE true""".stripMargin
+      )) { case Success(DoWhileLoop(Literal(_), Tree(List(_)))) => }
     }
 
     test("if") {
