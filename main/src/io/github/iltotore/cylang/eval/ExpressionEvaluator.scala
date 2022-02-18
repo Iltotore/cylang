@@ -268,6 +268,19 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       Value.Void
     }
 
+    case DoWhileLoop(condition, expression) => eval {
+      while {
+        evalUnbox(expression)
+        evalUnbox(condition) match {
+
+          case Value.Bool(value) => value
+
+          case _ => ??
+        }
+      } do {}
+      Value.Void
+    }
+
     case If(condition, expression, elseExpression) => eval {
       if (evalUnbox(condition) match {
 

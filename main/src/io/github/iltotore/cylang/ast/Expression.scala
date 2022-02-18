@@ -57,7 +57,9 @@ object Expression {
 
   case class ForLoop(name: String, from: Expression, to: Expression, step: Expression, expression: Expression) extends Expression
 
-  case class WhileLoop(condition: Expression, expression: Expression) extends Expression //TODO do-while
+  case class WhileLoop(condition: Expression, expression: Expression) extends Expression
+
+  case class DoWhileLoop(condition: Expression, expression: Expression) extends Expression
   
   case class If(condition: Expression, expression: Expression, elseExpression: Expression) extends Expression
 
