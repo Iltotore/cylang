@@ -665,6 +665,41 @@ object EvaluationSuite extends TestSuite {
       assertMatch(result.map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _, _)) => }
     }
 
+    test("doWhileLoop") {
+
+      given Context = Context(
+        Scope
+          .empty
+          .withDeclaration("x", CYType.Integer, Value.Integer(0))
+          .withDeclaration("i", CYType.Integer, Value.Integer(1)),
+        List.empty,
+        None
+      )
+
+      def result(condition: Expression) = DoWhileLoop(
+        condition = condition,
+        expression = Tree(List(
+          VariableAssignment(
+            "x",
+            Addition(
+              VariableCall("x"),
+              VariableCall("i")
+            )
+          ),
+          VariableAssignment(
+            "i",
+            Addition(
+              VariableCall("i"),
+              Literal(Value.Integer(1))
+            )
+          )
+        ))
+      ).evaluate
+
+      test("loop") - assertMatch(result(Less(VariableCall("i"), Literal(Value.Integer(10)))).map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(45), _, _)) => }
+      test("firstIteration") - assertMatch(result(Literal(Value.Bool(false))).map(_._1.scope.variables("x"))) { case Right(Variable(CYType.Integer, Value.Integer(1), _, _)) => }
+    }
+
     test("if") {
 
       given Context = Context(
