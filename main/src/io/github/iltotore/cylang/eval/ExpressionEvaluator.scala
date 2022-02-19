@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.eval
 
 import io.github.iltotore.cylang.{CYType, Context, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Expression, Structure, Value}
+import io.github.iltotore.cylang.ast.{Body, CYFunction, Enumeration, Expression, Structure, Value}
 import io.github.iltotore.cylang.util.*
 
 import scala.collection.immutable.NumericRange

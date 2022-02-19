@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.test
 
 import io.github.iltotore.cylang.{CYType, Parameter}
 import utest.*
-import io.github.iltotore.cylang.ast.Value
+import io.github.iltotore.cylang.ast.{Body, Value}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.parse.ExpressionParser.*
 
