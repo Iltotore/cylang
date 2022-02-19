@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.parse
 
 import io.github.iltotore.cylang.{CYType, Parameter, execute}
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.ast.{Expression, Structure, Value}
+import io.github.iltotore.cylang.ast.{Body, Expression, Structure, Value}
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.*
@@ -75,7 +75,7 @@ object ExpressionParser extends RegexParsers with CYParsers {
     case name ~ params ~ _ ~ tpe ~ b => FunctionDeclaration(name, tpe, params, b)
   }
 
-  def declaration: Parser[Declaration] = constantDeclaration | enumerationDeclaration | structureDeclaration | functionDeclaration
+  def declaration: Parser[Expression] = constantDeclaration | enumerationDeclaration | structureDeclaration | functionDeclaration
 
   private val binaryOps: Map[String, (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
