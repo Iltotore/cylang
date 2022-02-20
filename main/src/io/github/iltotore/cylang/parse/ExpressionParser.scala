@@ -75,7 +75,11 @@ object ExpressionParser extends RegexParsers with CYParsers {
     case name ~ params ~ _ ~ tpe ~ b => FunctionDeclaration(name, tpe, params, b)
   }
 
-  def declaration: Parser[Expression] = constantDeclaration | enumerationDeclaration | structureDeclaration | functionDeclaration
+  def procedureDeclaration: Parser[FunctionDeclaration] = "PROCEDURE" ~> word ~ ("(" ~> repsep(param, ",") <~ ")") ~ body ^^ {
+    case name ~ params ~ b => FunctionDeclaration(name, CYType.Void, params, b)
+  }
+
+  def declaration: Parser[Expression] = constantDeclaration | enumerationDeclaration | structureDeclaration | functionDeclaration | procedureDeclaration
 
   private val binaryOps: Map[String, (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
