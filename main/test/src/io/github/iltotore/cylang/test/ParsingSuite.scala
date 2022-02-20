@@ -286,6 +286,14 @@ object ParsingSuite extends TestSuite {
         |FIN""".stripMargin
     )) { case Success(FunctionDeclaration("facto", CYType.Integer, _, _)) => }
 
+    test("procedureDeclaration") - assertMatch(parseAll(
+      procedureDeclaration,
+      """PROCEDURE foo(x: texte)
+        |DEBUT
+        |  ECRIRE(x)
+        |FIN""".stripMargin
+    )) { case Success(FunctionDeclaration("foo", CYType.Void, _, _)) => }
+
     test("program") {
 
       val expected = ProgramDeclaration(
