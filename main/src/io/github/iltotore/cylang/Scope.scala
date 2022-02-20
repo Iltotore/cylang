@@ -3,7 +3,13 @@ package io.github.iltotore.cylang
 import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Structure, Value}
 import io.github.iltotore.cylang.eval.EvaluationError
 
-case class Scope(depth: Int, enumerations: Map[String, Enumeration], structures: Map[String, Structure], functions: Map[String, CYFunction], variables: Map[String, Variable]) {
+case class Scope(
+                  depth: Int,
+                  enumerations: Map[String, Enumeration],
+                  structures: Map[String, Structure],
+                  functions: Map[String, CYFunction],
+                  variables: Map[String, Variable]
+                ) {
 
   def withVariable(name: String, variable: Variable): Scope = this.copy(variables = variables.updated(name, variable))
 
