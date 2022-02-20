@@ -54,5 +54,5 @@ trait Evaluator[-A] {
         case Left(value) => throw value
     }
 
-    def update(context: Context)(using dsl: EvalDSL): Unit = dsl.context = dsl.context.merged(context)
+    def update(context: Context)(using dsl: EvalDSL): Unit = dsl.context = context
 }

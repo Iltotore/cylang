@@ -238,7 +238,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       if (args.length != function.parameters.length)
         abort(s"Invalid argument count. Got: ${args.length}, Expected: ${function.parameters.length}")
       val values = for (arg <- args) yield evalUnbox(arg)
-      unbox(function.evaluate(values)(using currentContext, this))
+      unbox(function.evaluate(values)(using this))
     }
 
     case ForLoop(name, from, to, step, expression) => eval {

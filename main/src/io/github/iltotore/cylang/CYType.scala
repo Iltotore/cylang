@@ -80,7 +80,7 @@ object CYType {
 
     override def defaultValue(using context: Context): Either[EvaluationError, Value] = either {
       val structure = ensureOption(context.scope.structures.get(structName))(EvaluationError(s"Unknown structure $structName"))
-      val values = for(field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), true, 0))
+      val values = for(field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), true))
       Value.StructureInstance(structName, mutable.Map.from(values))
     }
   }
