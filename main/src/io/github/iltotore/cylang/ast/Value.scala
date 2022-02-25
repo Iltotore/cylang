@@ -8,6 +8,8 @@ sealed trait Value {
   def tpe: CYType
 
   def value: Any
+
+  override def toString: String = s"$value: $tpe"
 }
 
 object Value {
