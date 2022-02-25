@@ -11,8 +11,6 @@ sealed trait CYType {
   def name: String
 
   def defaultValue(using Context): Either[EvaluationError, Value]
-
-  override def toString: String = name
 }
 
 object CYType {

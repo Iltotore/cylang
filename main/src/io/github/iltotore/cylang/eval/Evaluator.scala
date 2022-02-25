@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang.eval
 
-import io.github.iltotore.cylang.Context
+import io.github.iltotore.cylang.{Context, Cursor}
 import io.github.iltotore.cylang.ast.Value
 
 import scala.util.{Failure, Success, Try}
@@ -31,7 +31,7 @@ trait Evaluator[-A] {
     }
 
     given currentContext(using dsl: EvalDSL): Context = dsl.context
-
+    
     def abort(message: String)(using EvalDSL): Nothing = throw EvaluationError(message)
 
     inline def ??(using EvalDSL): Nothing = abort("Impossible")

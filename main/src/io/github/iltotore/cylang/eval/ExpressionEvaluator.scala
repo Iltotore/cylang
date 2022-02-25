@@ -11,7 +11,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
   override def evaluateInput(input: Expression)(using context: Context): EvalResult = input match {
 
-    case Empty => Right((context, Value.Void))
+    case Empty() => Right((context, Value.Void))
 
     case Literal(value) => Right((context, value))
 

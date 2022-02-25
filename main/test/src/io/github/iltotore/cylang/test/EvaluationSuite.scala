@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.test
 
 import scala.collection.mutable
 import utest.*
-import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope, Variable}
+import io.github.iltotore.cylang.{CYType, Context, Parameter, Position, Scope, Variable}
 import io.github.iltotore.cylang.ast.*
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.eval.{*, given}
@@ -10,6 +10,8 @@ import io.github.iltotore.cylang.eval.{*, given}
 object EvaluationSuite extends TestSuite {
 
   val tests: Tests = Tests {
+
+    given Position = Position(0, 0, "")
 
     given Context = Context.empty
 
@@ -716,11 +718,11 @@ object EvaluationSuite extends TestSuite {
         elseCond
       )
 
-      test - assertMatch(ast(true, Empty).evaluate.map(_._1.scope.variables("x"))) {
+      test - assertMatch(ast(true, Empty()).evaluate.map(_._1.scope.variables("x"))) {
         case Right(Variable(CYType.Integer, Value.Integer(1), _)) =>
       }
 
-      test - assertMatch(ast(false, Empty).evaluate.map(_._1.scope.variables("x"))) {
+      test - assertMatch(ast(false, Empty()).evaluate.map(_._1.scope.variables("x"))) {
         case Right(Variable(CYType.Integer, Value.Integer(0), _)) =>
       }
 
@@ -792,7 +794,7 @@ object EvaluationSuite extends TestSuite {
         List(Parameter("x", CYType.Integer)),
         Body(
           List(Parameter("res", CYType.Integer)),
-          Empty
+          Empty()
         )
       )
         .evaluate
