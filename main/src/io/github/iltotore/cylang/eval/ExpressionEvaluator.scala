@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang.eval
 
-import io.github.iltotore.cylang.{CYType, Context, Variable}
+import io.github.iltotore.cylang.{CYType, Context, Cursor, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Body, CYFunction, Enumeration, Expression, Structure, Value}
 import io.github.iltotore.cylang.util.*
@@ -9,7 +9,9 @@ import scala.collection.immutable.NumericRange
 
 class ExpressionEvaluator extends Evaluator[Expression] {
 
-  override def evaluateInput(input: Expression)(using context: Context): EvalResult = input match {
+  override def evaluateInput(input: Expression)(using context: Context): EvalResult = evaluateNode(input)(using context.copy(stack = context.stack :+ Cursor("", input.position)))
+
+  def evaluateNode(input: Expression)(using context: Context): EvalResult = input match {
 
     case Empty() => Right((context, Value.Void))
 
@@ -22,7 +24,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case Value.Real(x) => Value.Real(-x)
 
-        case _ => ??
+        case x => throw EvaluationError.typeMismatch(x)
       }
     }
 
@@ -37,7 +39,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value(x), Value.Text(y)) => Value.Text(String.valueOf(x) + y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x + $y")
       }
     }
 
@@ -48,7 +50,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Real(x - y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x - $y")
       }
     }
 
@@ -59,7 +61,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Real(x * y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x * $y")
       }
     }
 
@@ -70,7 +72,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Real(x / y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x / $y")
       }
     }
 
@@ -81,7 +83,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Integer((x / y).toInt)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x DIV $y")
       }
     }
 
@@ -92,7 +94,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Real(x % y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x MOD $y")
       }
     }
 
@@ -102,6 +104,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
         case (Value.Number(x), Value.Number(y)) => Value.Bool(x == y)
 
         case (Value(x), Value(y)) => Value.Bool(x equals y)
+
       }
     }
 
@@ -110,7 +113,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Bool(x > y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x > $y")
       }
     }
 
@@ -119,7 +122,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Bool(x >= y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x >= $y")
       }
     }
 
@@ -128,7 +131,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Bool(x < y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x < $y")
       }
     }
 
@@ -137,7 +140,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Number(x), Value.Number(y)) => Value.Bool(x <= y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x <= $y")
       }
     }
 
@@ -146,7 +149,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case Value.Bool(value) => Value.Bool(!value)
 
-        case _ => ??
+        case x => throw EvaluationError.typeMismatch(x)
       }
     }
 
@@ -155,7 +158,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       (evalUnbox(left), evalUnbox(right)) match {
         case (Value.Bool(x), Value.Bool(y)) => Value.Bool(x && y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x ET $y")
       }
     }
 
@@ -164,7 +167,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case (Value.Bool(x), Value.Bool(y)) => Value.Bool(x || y)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x OU $y")
       }
     }
 
@@ -193,7 +196,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
           if (i < 0) abort(s"Index can't be negative ($i)")
           values(i)
 
-        case _ => ??
+        case (x, y) => throw EvaluationError.typeMismatch(s"$x[$y]")
       }
     }
 
@@ -206,7 +209,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
           values(i) = value
           Value.Void
 
-        case _ => ??
+        case (x, y, z) => throw EvaluationError.typeMismatch(s"$x[$y] <- $z")
       }
     }
 
@@ -217,19 +220,20 @@ class ExpressionEvaluator extends Evaluator[Expression] {
           if (!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
           fields(name).value
 
-        case _ => ??
+        case x => throw EvaluationError(s"$x n'est pas une structure")
       }
     }
 
     case StructureAssignment(structureExpr, name, expression) => eval {
-      (evalUnbox(structureExpr), evalUnbox(expression)) match {
+      evalUnbox(structureExpr) match {
 
-        case (Value.StructureInstance(structName, fields), value) =>
+        case Value.StructureInstance(structName, fields) =>
+
           if (!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
-          fields(name) = fields(name).copy(value = value)
+          fields(name) = fields(name).copy(value = evalUnbox(expression))
           Value.Void
 
-        case _ => ??
+        case x => throw EvaluationError(s"$x n'est pas une structure")
       }
     }
 
@@ -252,7 +256,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
           }
           Value.Void
 
-        case _ => ??
+        case (x, y, z) => throw EvaluationError.typeMismatch(s"POUR $name DE $x A $y PAS DE $z")
       }
     }
 
@@ -261,7 +265,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case Value.Bool(x) => x
 
-        case _ => ??
+        case x => throw EvaluationError.typeMismatch(x)
       }) {
         evalUnbox(expression)
       }
@@ -275,7 +279,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
           case Value.Bool(value) => value
 
-          case _ => ??
+          case x => throw EvaluationError.typeMismatch(x)
         }
       } do {}
       Value.Void
@@ -286,7 +290,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case Value.Bool(x) => x
 
-        case _ => ??
+        case x => throw EvaluationError.typeMismatch(x)
       }) evalUnbox(expression)
       else evalUnbox(elseExpression)
       Value.Void

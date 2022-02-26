@@ -3,7 +3,7 @@ package io.github.iltotore.cylang.ast
 import io.github.iltotore.cylang.eval.EvaluationError
 import io.github.iltotore.cylang.{CYType, Context, Parameter, Position, Scope, Variable}
 
-enum Expression(using position: Position){
+enum Expression(using val position: Position){
 
   case Empty()(using position: Position)
 

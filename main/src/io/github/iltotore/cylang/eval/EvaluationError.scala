@@ -30,5 +30,5 @@ object EvaluationError {
 
   def impossible(using context: Context): EvaluationError = impossible(context.stack)
 
-  def typeMismatch(got: Value)(using Context): EvaluationError = EvaluationError(s"Type incompatible pour la valeur $got")
+  def typeMismatch(got: Any)(using Context): EvaluationError = EvaluationError(s"Type incompatible pour la valeur $got")
 }

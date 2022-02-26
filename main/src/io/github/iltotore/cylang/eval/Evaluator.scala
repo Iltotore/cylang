@@ -8,10 +8,10 @@ import scala.util.{Failure, Success, Try}
 trait Evaluator[-A] {
   
     def evaluateInput(input: A)(using Context): EvalResult
-
+    
     extension (input: A) {
 
-        def evaluate(using Context): EvalResult = evaluateInput(input)
+        def evaluate(using ctx: Context): EvalResult = evaluateInput(input)
     }
 
     //Evaluation DSL
