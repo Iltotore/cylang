@@ -1,11 +1,12 @@
 package io.github.iltotore.cylang.parse
 
-import io.github.iltotore.cylang.{CYType, Parameter, Position, execute}
+import io.github.iltotore.cylang.{CYType, Parameter, execute}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Body, Expression, Structure, Value}
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.*
+import scala.util.parsing.input.Position
 
 object ExpressionParser extends RegexParsers with CYParsers {
   

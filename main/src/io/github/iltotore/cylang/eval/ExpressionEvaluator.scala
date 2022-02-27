@@ -245,7 +245,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       unbox(function.evaluate(values)(using this))
     }
 
-    case ForLoop(name, from, to, step, expression) => eval {
+    case exp@ForLoop(name, from, to, step, expression) => eval {
       (evalUnbox(from), evalUnbox(to), evalUnbox(step)) match {
 
         case (Value.Integer(x), Value.Integer(y), Value.Integer(s)) =>
@@ -256,7 +256,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
           }
           Value.Void
 
-        case (x, y, z) => throw EvaluationError.typeMismatch(s"POUR $name DE $x A $y PAS DE $z")
+        case (x, y, z) =>
+          throw EvaluationError.typeMismatch(s"POUR $name DE $x A $y PAS DE $z")
       }
     }
 

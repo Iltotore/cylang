@@ -7,16 +7,18 @@ case class EvaluationError(message: String, stack: List[Cursor]) extends Excepti
 
   lazy val fullMessage: String = {
 
+    val s = stack.reverse
+
     if (stack.isEmpty) s"Erreur: $message"
     else
       s"""Erreur: $message
          |
-         |${stack.head.trace}
+         |${s.head.trace}
          |
-         |${stack.head.position.content}
+         |${s.head.position.longString}
          |
          |
-         |${stack.tail.map(_.trace).mkString("\n")}""".stripMargin
+         |${s.tail.map(_.trace).mkString("\n")}""".stripMargin
   }
 
   override def toString: String = fullMessage

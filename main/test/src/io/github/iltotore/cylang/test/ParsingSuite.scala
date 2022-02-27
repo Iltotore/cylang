@@ -1,6 +1,7 @@
 package io.github.iltotore.cylang.test
 
-import io.github.iltotore.cylang.{CYType, Parameter, Position}
+import scala.util.parsing.input.Position
+import io.github.iltotore.cylang.{CYType, FixedPosition, Parameter}
 import utest.*
 import io.github.iltotore.cylang.ast.{Body, Value}
 import io.github.iltotore.cylang.ast.Expression.*
@@ -10,7 +11,7 @@ object ParsingSuite extends TestSuite {
 
   val tests: Tests = Tests {
 
-    given Position = Position(0, 0, "")
+    given Position = FixedPosition(0, 0, "")
 
     test("literal") {
 

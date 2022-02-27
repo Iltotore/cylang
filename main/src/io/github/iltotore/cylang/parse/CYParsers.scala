@@ -3,7 +3,7 @@ package io.github.iltotore.cylang.parse
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.*
-import io.github.iltotore.cylang.Position
+import scala.util.parsing.input.Position
 
 trait CYParsers extends Parsers {
 
@@ -11,11 +11,9 @@ trait CYParsers extends Parsers {
     override def toString: String = s"$_1&$_2"
   }
 
-  def positionFromInput(in: Input): Position = Position(in.pos.line, in.pos.column, in.source.toString.takeWhile(_ != '\n'))
-
   def successWithPos[T](value: Position ?=> T): Parser[T] = new Parser {
 
-    override def apply(in: Input): ParseResult[T] = Success(value(using positionFromInput(in)), in)
+    override def apply(in: Input): ParseResult[T] = Success(value(using in.pos), in)
   }
 
   extension [T](p: Parser[T]) {
@@ -42,7 +40,7 @@ trait CYParsers extends Parsers {
 
     def mapWithPos[U](f: Position ?=> T => U): Parser[U] = new Parser {
 
-      override def apply(in: Input): ParseResult[U] = p(in).map(f(using positionFromInput(in)))
+      override def apply(in: Input): ParseResult[U] = res.map(f(using in))
     }
   }
 }

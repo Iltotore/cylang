@@ -1,8 +1,9 @@
 package io.github.iltotore.cylang.test
 
 import scala.collection.mutable
+import scala.util.parsing.input.Position
 import utest.*
-import io.github.iltotore.cylang.{CYType, Context, Parameter, Position, Scope, Variable}
+import io.github.iltotore.cylang.{CYType, Context, FixedPosition, Parameter, Scope, Variable}
 import io.github.iltotore.cylang.ast.*
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.eval.{*, given}
@@ -11,7 +12,7 @@ object EvaluationSuite extends TestSuite {
 
   val tests: Tests = Tests {
 
-    given Position = Position(0, 0, "")
+    given Position = FixedPosition(0, 0, "")
 
     given Context = Context.empty
 
