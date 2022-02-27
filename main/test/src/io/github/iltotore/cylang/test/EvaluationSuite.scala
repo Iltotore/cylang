@@ -478,6 +478,7 @@ object EvaluationSuite extends TestSuite {
         Scope
           .empty
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
+        "",
         List.empty,
         None
       )
@@ -492,6 +493,7 @@ object EvaluationSuite extends TestSuite {
         Scope
           .empty
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
+        "",
         List.empty,
         None
       )
@@ -524,6 +526,7 @@ object EvaluationSuite extends TestSuite {
         Scope
           .empty
           .withDeclaration("array", CYType.Array(CYType.Character, None), array),
+        "",
         List.empty,
         None
       )
@@ -564,6 +567,7 @@ object EvaluationSuite extends TestSuite {
         Scope
           .empty
           .withDeclaration("point", CYType.StructureInstance("Point"), instance),
+        "",
         List.empty,
         None
       )
@@ -593,6 +597,7 @@ object EvaluationSuite extends TestSuite {
               VariableCall("x")
             )
           ),
+        "",
         List.empty,
         None
       )
@@ -612,6 +617,7 @@ object EvaluationSuite extends TestSuite {
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
           .withDeclaration("i", CYType.Integer, Value.Void),
+        "",
         List.empty,
         None
       )
@@ -641,6 +647,7 @@ object EvaluationSuite extends TestSuite {
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
           .withDeclaration("i", CYType.Integer, Value.Integer(0)),
+        "",
         List.empty,
         None
       )
@@ -675,6 +682,7 @@ object EvaluationSuite extends TestSuite {
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
           .withDeclaration("i", CYType.Integer, Value.Integer(1)),
+        "",
         List.empty,
         None
       )
@@ -709,6 +717,7 @@ object EvaluationSuite extends TestSuite {
         Scope
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0)),
+        "",
         List.empty,
         None
       )

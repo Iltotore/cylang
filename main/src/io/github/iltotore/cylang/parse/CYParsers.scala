@@ -40,7 +40,7 @@ trait CYParsers extends Parsers {
 
     def mapWithPos[U](f: Position ?=> T => U): Parser[U] = new Parser {
 
-      override def apply(in: Input): ParseResult[U] = res.map(f(using in))
+      override def apply(in: Input): ParseResult[U] = p(in).map(f(using in.pos))
     }
   }
 }

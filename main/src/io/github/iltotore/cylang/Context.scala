@@ -2,9 +2,9 @@ package io.github.iltotore.cylang
 
 import io.github.iltotore.cylang.ast.Value
 
-case class Context(scope: Scope, stack: List[Cursor], returned: Option[Value])
+case class Context(scope: Scope, currentFunction: String, stack: List[Cursor], returned: Option[Value])
 
 object Context {
   
-  val empty: Context = Context(Scope.empty, List.empty, None)
+  val empty: Context = Context(Scope.empty, "en-tête du programme", List.empty, None)
 }

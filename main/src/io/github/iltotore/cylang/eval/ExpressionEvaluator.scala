@@ -9,7 +9,8 @@ import scala.collection.immutable.NumericRange
 
 class ExpressionEvaluator extends Evaluator[Expression] {
 
-  override def evaluateInput(input: Expression)(using context: Context): EvalResult = evaluateNode(input)(using context.copy(stack = context.stack :+ Cursor("", input.position)))
+  override def evaluateInput(input: Expression)(using context: Context): EvalResult =
+    evaluateNode(input)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, input.position)))
 
   def evaluateNode(input: Expression)(using context: Context): EvalResult = input match {
 
@@ -242,7 +243,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       if (args.length != function.parameters.length)
         abort(s"Invalid argument count. Got: ${args.length}, Expected: ${function.parameters.length}")
       val values = for (arg <- args) yield evalUnbox(arg)
-      unbox(function.evaluate(values)(using this))
+      update(currentContext.copy(currentFunction = s"FONCTION $name"))
+      unbox(function.evaluate(values)(using currentContext, this))
     }
 
     case exp@ForLoop(name, from, to, step, expression) => eval {
@@ -355,7 +357,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
         case Right(value) => scope.withDeclaration(param.name, param.tpe, value)
         case Left(err) => throw err
       })
-      update(currentContext.copy(scope = scope))
+      update(currentContext.copy(scope = scope, currentFunction = "PROGRAMME PRINCIPAL"))
       evalUnbox(expression)
     }
   }

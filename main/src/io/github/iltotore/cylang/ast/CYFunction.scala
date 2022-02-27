@@ -11,9 +11,8 @@ trait CYFunction {
 
   def variables: Map[String, (CYType, Value)]
 
-  def evaluate(args: List[Value])(using evaluator: Evaluator[Expression]): EvalResult = {
-    val context = Context.empty
-    var scope: Scope = context.scope
+  def evaluate(args: List[Value])(using context: Context, evaluator: Evaluator[Expression]): EvalResult = {
+    var scope: Scope = Scope.empty
     for ((param, arg) <- parameters.zip(args)) scope = scope.withDeclaration(param.name, param.tpe, arg)
     for ((name, (tpe, value)) <- variables) scope = scope.withDeclaration(name, tpe, value)
     execute(using context.copy(scope = scope))
