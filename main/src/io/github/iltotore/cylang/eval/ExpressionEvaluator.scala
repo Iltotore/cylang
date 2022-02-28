@@ -357,8 +357,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
         case Right(value) => scope.withDeclaration(param.name, param.tpe, value)
         case Left(err) => throw err
       })
-      update(currentContext.copy(scope = scope, currentFunction = "PROGRAMME PRINCIPAL"), true)
-      evalUnbox(expression)
+      unbox(expression.evaluate(using currentContext.copy(scope = scope, currentFunction = "PROGRAMME PRINCIPAL")))
     }
   }
 }

@@ -54,6 +54,6 @@ trait Evaluator[-A] {
         case Left(value) => throw value
     }
 
-    def update(context: Context, keepStack: Boolean = false)(using dsl: EvalDSL): Unit =
-        dsl.context = if(keepStack) context else context.copy(currentFunction = dsl.context.currentFunction, stack = dsl.context.stack)
+    def update(context: Context)(using dsl: EvalDSL): Unit =
+        dsl.context = context.copy(currentFunction = dsl.context.currentFunction, stack = dsl.context.stack)
 }
