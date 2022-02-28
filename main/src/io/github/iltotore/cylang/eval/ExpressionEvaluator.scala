@@ -247,7 +247,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       unbox(function.evaluate(values)(using currentContext, this))
     }
 
-    case exp@ForLoop(name, from, to, step, expression) => eval {
+    case ForLoop(name, from, to, step, expression) => eval {
       (evalUnbox(from), evalUnbox(to), evalUnbox(step)) match {
 
         case (Value.Integer(x), Value.Integer(y), Value.Integer(s)) =>
