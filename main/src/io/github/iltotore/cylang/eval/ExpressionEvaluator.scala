@@ -239,12 +239,11 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     }
 
     case FunctionCall(name, args) => eval {
-      val function = currentContext.scope.functions.getOrElse(name, abort(s"Unknown function: $name"))
+      val function = currentContext.scope.functions.getOrElse(name, abort(s"Fonction inconnue: $name"))
       if (args.length != function.parameters.length)
-        abort(s"Invalid argument count. Got: ${args.length}, Expected: ${function.parameters.length}")
+        abort(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: ${function.parameters.length}")
       val values = for (arg <- args) yield evalUnbox(arg)
-      update(currentContext.copy(currentFunction = s"FONCTION $name"))
-      unbox(function.evaluate(values)(using currentContext, this))
+      unbox(function.evaluate(values)(using currentContext.copy(currentFunction = s"FONCTION $name"), this))
     }
 
     case ForLoop(name, from, to, step, expression) => eval {
@@ -302,6 +301,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     case Tree(expressions) => eval {
       for (expr <- expressions if currentContext.returned.isEmpty) {
         evalUnbox(expr)
+        println(currentContext.stack)
       }
       currentContext.returned.getOrElse(Value.Void)
     }
@@ -357,7 +357,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
         case Right(value) => scope.withDeclaration(param.name, param.tpe, value)
         case Left(err) => throw err
       })
-      update(currentContext.copy(scope = scope, currentFunction = "PROGRAMME PRINCIPAL"))
+      update(currentContext.copy(scope = scope, currentFunction = "PROGRAMME PRINCIPAL"), true)
       evalUnbox(expression)
     }
   }

@@ -32,7 +32,7 @@ trait Evaluator[-A] {
 
     given currentContext(using dsl: EvalDSL): Context = dsl.context
     
-    def abort(message: String)(using EvalDSL): Nothing = throw EvaluationError(message)
+    inline def abort(message: String)(using EvalDSL): Nothing = throw EvaluationError(message)
 
     inline def ??(using EvalDSL): Nothing = abort("Impossible")
 
@@ -54,5 +54,6 @@ trait Evaluator[-A] {
         case Left(value) => throw value
     }
 
-    def update(context: Context)(using dsl: EvalDSL): Unit = dsl.context = context
+    def update(context: Context, keepStack: Boolean = false)(using dsl: EvalDSL): Unit =
+        dsl.context = if(keepStack) context else context.copy(currentFunction = dsl.context.currentFunction, stack = dsl.context.stack)
 }
