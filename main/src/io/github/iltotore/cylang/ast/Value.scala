@@ -9,7 +9,7 @@ sealed trait Value {
 
   def value: Any
 
-  override def toString: String = s"$value: $tpe"
+  override def toString: String = s"($value: $tpe)"
 }
 
 object Value {
