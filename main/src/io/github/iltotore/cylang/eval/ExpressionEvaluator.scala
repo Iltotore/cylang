@@ -9,8 +9,12 @@ import scala.collection.immutable.NumericRange
 
 class ExpressionEvaluator extends Evaluator[Expression] {
 
-  override def evaluateInput(input: Expression)(using context: Context): EvalResult =
-    evaluateNode(input)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, input.position)))
+  override def evaluateInput(input: Expression)(using context: Context): EvalResult = input match {
+
+    case noCursor: (Tree | ProgramDeclaration) => evaluateNode(noCursor)
+
+    case node => evaluateNode(node)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, node.position)))
+  }
 
   def evaluateNode(input: Expression)(using context: Context): EvalResult = input match {
 
