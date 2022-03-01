@@ -8,6 +8,8 @@ sealed trait Value {
   def tpe: CYType
 
   def value: Any
+
+  override def toString: String = s"($value: $tpe)"
 }
 
 object Value {
@@ -41,11 +43,15 @@ object Value {
   case class Character(value: Char) extends Value {
 
     override val tpe: CYType = CYType.Character
+
+    override def toString: String = s"('$value': $tpe)"
   }
 
   case class Text(value: String) extends Value {
 
     override val tpe: CYType = CYType.Text
+
+    override def toString: String = s"(\"$value\": $tpe)"
   }
   
   case class Bool(value: Boolean) extends Value {
@@ -56,16 +62,21 @@ object Value {
   case class Array(value: scala.Array[Value]) extends Value {
 
     override def tpe: CYType = CYType.Array(value.headOption.fold(CYType.Void)(_.tpe), Some(value.length))
+
+    override def toString: String = s"(${value.mkString("[", ", ", "]")}: $tpe)"
   }
 
   case class EnumerationField(name: String, value: String) extends Value {
 
     override def tpe: CYType = CYType.EnumerationField(name)
+
   }
 
   case class StructureInstance(name: String, value: mutable.Map[String, Variable]) extends Value {
 
     override def tpe: CYType = CYType.StructureInstance(name)
+
+    override def toString: String = s"(instance de $tpe)"
   }
 
   case object Void extends Value {
@@ -73,5 +84,7 @@ object Value {
     override def tpe: CYType = CYType.Void
 
     override val value: Null = null
+
+    override def toString: String = "VIDE"
   }
 }

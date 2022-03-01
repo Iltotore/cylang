@@ -1,6 +1,7 @@
 package io.github.iltotore.cylang.test
 
-import io.github.iltotore.cylang.{CYType, Parameter}
+import scala.util.parsing.input.Position
+import io.github.iltotore.cylang.{CYType, FixedPosition, Parameter}
 import utest.*
 import io.github.iltotore.cylang.ast.{Body, Value}
 import io.github.iltotore.cylang.ast.Expression.*
@@ -9,6 +10,8 @@ import io.github.iltotore.cylang.parse.ExpressionParser.*
 object ParsingSuite extends TestSuite {
 
   val tests: Tests = Tests {
+
+    given Position = FixedPosition(0, 0, "")
 
     test("literal") {
 
@@ -182,7 +185,7 @@ object ParsingSuite extends TestSuite {
         """SI true FAIRE
           |ecrire(1)
           |FIN SI""".stripMargin
-      )) { case Success(If(Literal(_), Tree(List(_)), Empty)) => }
+      )) { case Success(If(Literal(_), Tree(List(_)), Empty())) => }
 
       test("withElse") - assertMatch(parseAll(
         ifElse,

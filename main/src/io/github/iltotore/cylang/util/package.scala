@@ -1,5 +1,6 @@
 package io.github.iltotore.cylang
 
+import scala.quoted.*
 import scala.collection.mutable
 import scala.reflect.ClassTag
 

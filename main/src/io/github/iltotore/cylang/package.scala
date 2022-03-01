@@ -6,7 +6,7 @@ import io.github.iltotore.cylang.parse.ExpressionParser.*
 import io.github.iltotore.cylang.parse.ParsingException
 
 package object cylang {
-
+  
   def execute(source: String)(using context: Context, evaluator: Evaluator[Expression]): Either[ParsingException | EvaluationError, (Context, Value)] =
     parseAll(program, source) match {
 
