@@ -3,7 +3,12 @@ package io.github.iltotore.cylang
 import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Structure, Value}
 import io.github.iltotore.cylang.eval.EvaluationError
 
-case class Scope(depth: Int, enumerations: Map[String, Enumeration], structures: Map[String, Structure], functions: Map[String, CYFunction], variables: Map[String, Variable]) {
+case class Scope(
+                  enumerations: Map[String, Enumeration],
+                  structures: Map[String, Structure],
+                  functions: Map[String, CYFunction],
+                  variables: Map[String, Variable]
+                ) {
 
   def withVariable(name: String, variable: Variable): Scope = this.copy(variables = variables.updated(name, variable))
 
@@ -13,7 +18,7 @@ case class Scope(depth: Int, enumerations: Map[String, Enumeration], structures:
   
   def withStructure(name: String, structure: Structure): Scope = this.copy(structures = structures.updated(name, structure))
   
-  def withDeclaration(name: String, tpe: CYType, value: Value, mutable: Boolean = true): Scope = this.withVariable(name, Variable(tpe, value, mutable, depth))
+  def withDeclaration(name: String, tpe: CYType, value: Value, mutable: Boolean = true): Scope = this.withVariable(name, Variable(tpe, value, mutable))
   
   def withAssignment(name: String, value: Value)(using Context): Either[EvaluationError, Scope] = variables.get(name) match {
 
@@ -21,18 +26,9 @@ case class Scope(depth: Int, enumerations: Map[String, Enumeration], structures:
 
     case None => Left(EvaluationError(s"Unknown variable $name"))
   }
-
-  def nested: Scope = this.copy(depth = this.depth + 1)
-
-  def merged(scope: Scope): Scope = this.copy( //TODO remove depth
-    variables = this.variables ++ scope.variables.filter(_._2.depth <= this.depth),
-    enumerations = this.enumerations ++ scope.enumerations,
-    structures = this.structures ++ scope.structures,
-    functions = this.functions ++ scope.functions
-  )
 }
 
 object Scope {
   
-  val empty: Scope = Scope(0, Map.empty, Map.empty, Map.empty, Map.empty)
+  val empty: Scope = Scope(Map.empty, Map.empty, Map.empty, Map.empty)
 }

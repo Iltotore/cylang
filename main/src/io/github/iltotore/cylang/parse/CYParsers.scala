@@ -3,11 +3,17 @@ package io.github.iltotore.cylang.parse
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.*
+import scala.util.parsing.input.Position
 
-trait CYParsers extends Parsers {
+trait CYParsers extends RegexParsers {
 
   case class &[+A, +B](_1: A, _2: B) {
     override def toString: String = s"$_1&$_2"
+  }
+
+  def successWithPos[T](value: Position ?=> T): Parser[T] = new Parser {
+
+    override def apply(in: Input): ParseResult[T] = Success(value(using in.pos), in)
   }
 
   extension [T](p: Parser[T]) {
@@ -32,5 +38,12 @@ trait CYParsers extends Parsers {
 
     def skip[U](q: => Parser[U]): Parser[T] = q.* ~> p
 
+    def mapWithPos[U](f: Position ?=> T => U): Parser[U] = new Parser {
+
+      override def apply(in: Input): ParseResult[U] = {
+        val skipped = in.drop(handleWhiteSpace(in.source, in.offset) - in.offset)
+        p(skipped).map(f(using skipped.pos))
+      }
+    }
   }
 }

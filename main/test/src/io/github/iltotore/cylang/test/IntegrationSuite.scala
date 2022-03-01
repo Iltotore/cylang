@@ -23,7 +23,7 @@ object IntegrationSuite extends TestSuite {
           |DEBUT
           |  res <- 1
           |  POUR i DE 1 A x + 1 FAIRE
-          |  res <- res * i
+          |    res <- res * i
           |  FIN POUR
           |  RETOURNER res
           |FIN

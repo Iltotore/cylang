@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang.eval
 
-import io.github.iltotore.cylang.Context
+import io.github.iltotore.cylang.{Context, Cursor}
 import io.github.iltotore.cylang.ast.Value
 
 import scala.util.{Failure, Success, Try}
@@ -8,10 +8,10 @@ import scala.util.{Failure, Success, Try}
 trait Evaluator[-A] {
   
     def evaluateInput(input: A)(using Context): EvalResult
-
+    
     extension (input: A) {
 
-        def evaluate(using Context): EvalResult = evaluateInput(input)
+        def evaluate(using ctx: Context): EvalResult = evaluateInput(input)
     }
 
     //Evaluation DSL
@@ -31,8 +31,8 @@ trait Evaluator[-A] {
     }
 
     given currentContext(using dsl: EvalDSL): Context = dsl.context
-
-    def abort(message: String)(using EvalDSL): Nothing = throw EvaluationError(message)
+    
+    inline def abort(message: String)(using EvalDSL): Nothing = throw EvaluationError(message)
 
     inline def ??(using EvalDSL): Nothing = abort("Impossible")
 
@@ -54,5 +54,6 @@ trait Evaluator[-A] {
         case Left(value) => throw value
     }
 
-    def update(context: Context)(using dsl: EvalDSL): Unit = dsl.context = dsl.context.merged(context)
+    def update(context: Context)(using dsl: EvalDSL): Unit =
+        dsl.context = context.copy(currentFunction = dsl.context.currentFunction, stack = dsl.context.stack)
 }
