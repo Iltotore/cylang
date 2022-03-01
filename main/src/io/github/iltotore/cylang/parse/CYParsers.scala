@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.parsing.combinator.*
 import scala.util.parsing.input.Position
 
-trait CYParsers extends Parsers {
+trait CYParsers extends RegexParsers {
 
   case class &[+A, +B](_1: A, _2: B) {
     override def toString: String = s"$_1&$_2"
@@ -40,7 +40,10 @@ trait CYParsers extends Parsers {
 
     def mapWithPos[U](f: Position ?=> T => U): Parser[U] = new Parser {
 
-      override def apply(in: Input): ParseResult[U] = p(in).map(f(using in.pos))
+      override def apply(in: Input): ParseResult[U] = {
+        val skipped = in.drop(handleWhiteSpace(in.source, in.offset) - in.offset)
+        p(skipped).map(f(using skipped.pos))
+      }
     }
   }
 }

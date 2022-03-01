@@ -8,7 +8,7 @@ import scala.util.matching.Regex
 import scala.util.parsing.combinator.*
 import scala.util.parsing.input.Position
 
-object ExpressionParser extends RegexParsers with CYParsers {
+object ExpressionParser extends CYParsers {
   
   val word: Parser[String] = raw"\w+".r
 
