@@ -12,6 +12,8 @@ sealed trait CYType {
 
   def defaultValue(using Context): Either[EvaluationError, Value]
 
+  def isSubTypeOf(other: CYType): Boolean = this equals other
+
   override def toString: String = name
 }
 
@@ -63,6 +65,15 @@ object CYType {
       val values = for(i <- 0 until size.get) yield ensureRight(innerType.defaultValue)
       Value.Array(values.toArray)
     }
+
+    override def isSubTypeOf(other: CYType): Boolean = other match {
+
+      case Array(innerType, Some(size)) => this.innerType.isSubTypeOf(innerType) && this.size.contains(size)
+
+      case Array(innerType, None) => this.innerType.isSubTypeOf(innerType)
+
+      case _ => false
+    }
   }
 
   case class EnumerationField(enumName: String) extends CYType {
@@ -85,6 +96,15 @@ object CYType {
       val values = for(field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), true))
       Value.StructureInstance(structName, mutable.Map.from(values))
     }
+  }
+
+  case object Any extends CYType {
+
+    override def name: String = "inconnu"
+
+    override def defaultValue(using Context): Either[EvaluationError, Value] = Left(EvaluationError("Ce type ne peut pas avoir de valeur par défaut"))
+
+    override def isSubTypeOf(other: CYType): Boolean = true
   }
 
   case object Void extends CYType {

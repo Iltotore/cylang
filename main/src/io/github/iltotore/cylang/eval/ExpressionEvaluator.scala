@@ -247,6 +247,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       if (args.length != function.parameters.length)
         abort(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: ${function.parameters.length}")
       val values = for (arg <- args) yield evalUnbox(arg)
+      val mismatches = values.zip(function.parameters).filterNot(_.tpe isSubTypeOf _.tpe )
+      if(mismatches.nonEmpty) throw EvaluationError.typeMismatch(mismatches.map((v, p) => s"$p <- $v").mkString(" et "))
       unbox(function.evaluate(values)(using currentContext.copy(currentFunction = s"FONCTION $name"), this))
     }
 
