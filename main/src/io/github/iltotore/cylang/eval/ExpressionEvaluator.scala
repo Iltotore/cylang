@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang.eval
 
-import io.github.iltotore.cylang.{CYType, Context, Cursor, Variable}
+import io.github.iltotore.cylang.{CYType, Context, Cursor, Scope, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Body, CYFunction, Enumeration, Expression, Structure, Value}
 import io.github.iltotore.cylang.util.*
@@ -249,7 +249,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       val values = for (arg <- args) yield evalUnbox(arg)
       val mismatches = values.zip(function.parameters).filterNot(_.tpe isSubTypeOf _.tpe )
       if(mismatches.nonEmpty) throw EvaluationError.typeMismatch(mismatches.map((v, p) => s"$p <- $v").mkString(" et "))
-      unbox(function.evaluate(values)(using currentContext.copy(currentFunction = s"FONCTION $name"), this))
+      partialUnbox(function.evaluate(values)(using currentContext.copy(scope = Scope.empty, currentFunction = s"FONCTION $name"), this))._2
     }
 
     case ForLoop(name, from, to, step, expression) => eval {
@@ -305,10 +305,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     }
 
     case Tree(expressions) => eval {
-      for (expr <- expressions if currentContext.returned.isEmpty) {
-        evalUnbox(expr)
-        println(currentContext.stack)
-      }
+      for (expr <- expressions if currentContext.returned.isEmpty) evalUnbox(expr)
       currentContext.returned.getOrElse(Value.Void)
     }
 
