@@ -1,4 +1,14 @@
-//TODO ecrire, lire
+PROGRAMME stdLib
+
+PROCEDURE ECRIRE(x: any)
+DEBUT
+  stdEcrire(x)
+FIN
+
+PROCEDURE LIRE(x: any)
+DEBUT
+  stdLire(x)
+FIN
 
 FONCTION puissance(x: reel, n: entier): reel
 VARIABLE
@@ -19,19 +29,19 @@ FIN
 
 FONCTION min(x: reel, y: reel): reel
 DEBUT
-  SI y < x FAIRE
-    RETOURNER y
-  SINON
+  SI x < y ALORS
     RETOURNER x
+  SINON
+    RETOURNER y
   FIN SI
 FIN
 
 FONCTION max(x: reel, y: reel): reel
 DEBUT
-  SI y > x FAIRE
-    RETOURNER y
-  SINON
+  SI x > y ALORS
     RETOURNER x
+  SINON
+    RETOURNER y
   FIN SI
 FIN
 
@@ -42,7 +52,7 @@ VARIABLE
 DEBUT
   res <- 1
   POUR i DE 1 A x + 1 FAIRE
-  res <- res * i
+    res <- res * i
   FIN POUR
   RETOURNER res
 FIN
@@ -50,4 +60,7 @@ FIN
 FONCTION alea(x: entier): entier
 DEBUT
   RETOURNER stdAlea(x)
+FIN
+
+DEBUT
 FIN
