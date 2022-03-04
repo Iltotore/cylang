@@ -12,7 +12,7 @@ sealed trait CYType {
 
   def defaultValue(using Context): Either[EvaluationError, Value]
 
-  def isSubTypeOf(other: CYType): Boolean = this equals other
+  def isSubTypeOf(other: CYType): Boolean = this.equals(other) || other.equals(CYType.Any)
 
   override def toString: String = name
 }
@@ -21,18 +21,20 @@ object CYType {
 
   sealed trait Number extends CYType
 
-  case object Integer extends Number {
-
-    override val name: String = "entier"
-
-    override def defaultValue(using Context): Either[EvaluationError, Value] = Right(Value.Integer(0))
-  }
-
   case object Real extends Number {
 
     override def name: String = "reel"
 
     override def defaultValue(using Context): Either[EvaluationError, Value] = Right(Value.Real(0))
+  }
+
+  case object Integer extends Number {
+
+    override val name: String = "entier"
+
+    override def defaultValue(using Context): Either[EvaluationError, Value] = Right(Value.Integer(0))
+
+    override def isSubTypeOf(other: CYType): Boolean = other.equals(CYType.Real) || super.isSubTypeOf(other)
   }
 
   case object Character extends CYType {
@@ -104,7 +106,6 @@ object CYType {
 
     override def defaultValue(using Context): Either[EvaluationError, Value] = Left(EvaluationError("Ce type ne peut pas avoir de valeur par défaut"))
 
-    override def isSubTypeOf(other: CYType): Boolean = true
   }
 
   case object Void extends CYType {
