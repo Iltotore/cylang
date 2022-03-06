@@ -63,7 +63,7 @@ object CYType {
     override def name: String = s"tableau de $innerType de taille ${size.getOrElse("inconnue")}"
 
     override def defaultValue(using Context): Either[EvaluationError, Value] = either {
-      if(size.isEmpty) left(EvaluationError("Array variables must have a defined size"))
+      if(size.isEmpty) left(EvaluationError("Les variables ne peuvent pas stocker un tableau sans taille définie"))
       val values = for(i <- 0 until size.get) yield ensureRight(innerType.defaultValue)
       Value.Array(values.toArray)
     }
