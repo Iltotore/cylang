@@ -249,7 +249,10 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       val values = for (arg <- args) yield evalUnbox(arg)
       val mismatches = values.zip(function.parameters).filterNot(_.tpe isSubTypeOf _.tpe )
       if(mismatches.nonEmpty) throw EvaluationError.typeMismatch(mismatches.map((v, p) => s"$p <- $v").mkString(" et "))
-      partialUnbox(function.evaluate(values)(using currentContext.copy(scope = Scope.empty, currentFunction = s"FONCTION $name"), this))._2
+      val globalScope = currentContext
+          .scope
+          .copy(variables = currentContext.scope.variables.filterNot(_._2.mutable))
+      partialUnbox(function.evaluate(values)(using currentContext.copy(scope = globalScope, currentFunction = s"FONCTION $name"), this))._2
     }
 
     case ForLoop(name, from, to, step, expression) => eval {
