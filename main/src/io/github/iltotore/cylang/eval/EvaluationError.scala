@@ -28,7 +28,7 @@ object EvaluationError {
 
   def apply(message: String)(using context: Context): EvaluationError = EvaluationError(message, context.stack)
 
-  def impossible(stack: List[Cursor]): EvaluationError = EvaluationError("This is a language bug!", stack)
+  def impossible(stack: List[Cursor]): EvaluationError = EvaluationError("Situation impossible. Probablement un bug", stack)
 
   def impossible(using context: Context): EvaluationError = impossible(context.stack)
 

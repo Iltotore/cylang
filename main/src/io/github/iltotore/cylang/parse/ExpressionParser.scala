@@ -107,11 +107,11 @@ object ExpressionParser extends CYParsers {
 
   def doWhileLoop: Parser[DoWhileLoop] = "FAIRE" ~> tree("TANT QUE") ~ expression mapWithPos { case expr ~ cond => DoWhileLoop(cond, expr)}
   
-  def ifElse: Parser[If] = "SI" ~> expression ~ "FAIRE" ~ ifBody mapWithPos {
+  def ifElse: Parser[If] = "SI" ~> expression ~ "ALORS" ~ ifBody mapWithPos {
     case cond ~ _ ~ (expr ~ elseExpr) => If(cond, expr, elseExpr)
   }
 
-  def ifBody: Parser[~[Expression, Expression]] = (tree("SINON") ~ (ifElse | ("FAIRE" ~> tree("FIN SI")))) | (tree("FIN SI") ~ empty)
+  def ifBody: Parser[~[Expression, Expression]] = (tree("SINON") ~ (ifElse | tree("FIN SI"))) | (tree("FIN SI") ~ empty)
 
   def treeReturn: Parser[Expression] = "RETOURNER" ~> expression mapWithPos Return.apply
 

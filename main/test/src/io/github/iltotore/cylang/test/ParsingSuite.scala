@@ -182,27 +182,27 @@ object ParsingSuite extends TestSuite {
     test("if") {
       test("simple") - assertMatch(parseAll(
         ifElse,
-        """SI true FAIRE
+        """SI true ALORS
           |ecrire(1)
           |FIN SI""".stripMargin
       )) { case Success(If(Literal(_), Tree(List(_)), Empty())) => }
 
       test("withElse") - assertMatch(parseAll(
         ifElse,
-        """SI true FAIRE
+        """SI true ALORS
           |ecrire(1)
-          |SINON FAIRE
+          |SINON
           |ecrire(2)
           |FIN SI""".stripMargin
       )) { case Success(If(Literal(_), Tree(List(_)), Tree(List(_)))) => }
 
       test("withElseIf") - assertMatch(parseAll(
         ifElse,
-        """SI true FAIRE
+        """SI true ALORS
           |ecrire(1)
-          |SINON SI true FAIRE
+          |SINON SI true ALORS
           |ecrire(2)
-          |SINON FAIRE
+          |SINON
           |ecrire(3)
           |FIN SI""".stripMargin
       )) { case Success(If(Literal(_), Tree(List(_)), If(Literal(_), Tree(List(_)), Tree(List(_))))) => }

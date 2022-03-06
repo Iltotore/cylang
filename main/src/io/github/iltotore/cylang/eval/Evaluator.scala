@@ -45,9 +45,9 @@ trait Evaluator[-A] {
         case Left(value) => throw value
     }
 
-    def evalUnbox(toEvaluate: A)(using dsl: EvalDSL): Value = unbox(toEvaluate.evaluate)
+    def evalUnbox(toEvaluate: A)(using EvalDSL): Value = unbox(toEvaluate.evaluate)
 
-    def partialUnbox(result: EvalResult)(using dsl: EvalDSL): (Context, Value) = result match {
+    def partialUnbox(result: EvalResult)(using EvalDSL): (Context, Value) = result match {
 
         case Right(x) => x
 

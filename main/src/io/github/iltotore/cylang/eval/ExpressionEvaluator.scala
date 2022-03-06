@@ -1,6 +1,6 @@
 package io.github.iltotore.cylang.eval
 
-import io.github.iltotore.cylang.{CYType, Context, Cursor, Variable}
+import io.github.iltotore.cylang.{CYType, Context, Cursor, Scope, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Body, CYFunction, Enumeration, Expression, Structure, Value}
 import io.github.iltotore.cylang.util.*
@@ -73,7 +73,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     case Division(left, right) => eval {
       (evalUnbox(left), evalUnbox(right)) match {
 
-        case (Value.Number(x), Value.Number(0)) => abort("Division by zero")
+        case (Value.Number(x), Value.Number(0)) => abort("Division par zero")
 
         case (Value.Number(x), Value.Number(y)) => Value.Real(x / y)
 
@@ -84,7 +84,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     case WholeDivision(left, right) => eval {
       (evalUnbox(left), evalUnbox(right)) match {
 
-        case (Value.Number(x), Value.Number(0)) => abort("Division by zero")
+        case (Value.Number(x), Value.Number(0)) => abort("Division par zero")
 
         case (Value.Number(x), Value.Number(y)) => Value.Integer((x / y).toInt)
 
@@ -95,7 +95,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     case Modulo(left, right) => eval {
       (evalUnbox(left), evalUnbox(right)) match {
 
-        case (Value.Number(x), Value.Number(0)) => abort("Division by zero")
+        case (Value.Number(x), Value.Number(0)) => abort("Division par zero")
 
         case (Value.Number(x), Value.Number(y)) => Value.Real(x % y)
 
@@ -181,7 +181,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       .variables
       .get(name)
       .map(variable => (context, variable.value))
-      .toRight(EvaluationError(s"Unknown variable: $name"))
+      .toRight(EvaluationError(s"Variable inconnue: $name"))
 
     case VariableAssignment(name, expression) => eval {
 
@@ -197,8 +197,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       (evalUnbox(arrayExpr), evalUnbox(index)) match {
 
         case (Value.Array(values), Value.Integer(i)) =>
-          if (values.length <= i) abort(s"Index $i out of ${values.length}-sized array")
-          if (i < 0) abort(s"Index can't be negative ($i)")
+          if (values.length <= i) abort(s"L'index $i est en dehors du tableau de taille ${values.length}")
+          if (i < 0) abort(s"L'index ne peut pas être négatif ($i)")
           values(i)
 
         case (x, y) => throw EvaluationError.typeMismatch(s"$x[$y]")
@@ -209,8 +209,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       (evalUnbox(arrayExpr), evalUnbox(index), evalUnbox(expression)) match {
 
         case (Value.Array(values), Value.Integer(i), value) =>
-          if (values.length <= i) abort(s"Index $i out of ${values.length}-sized array")
-          if (i < 0) abort(s"Index can't be negative ($i)")
+          if (values.length <= i) abort(s"L'index $i est en dehors du tableau de taille ${values.length}")
+          if (i < 0) abort(s"L'index ne peut pas être négatif ($i)")
           values(i) = value
           Value.Void
 
@@ -222,7 +222,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       evalUnbox(structureExpr) match {
 
         case Value.StructureInstance(structName, fields) =>
-          if (!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
+          if (!fields.contains(name)) abort(s"$name n'est pas un attribut de la structure $structName")
           fields(name).value
 
         case x => throw EvaluationError(s"$x n'est pas une structure")
@@ -234,7 +234,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
         case Value.StructureInstance(structName, fields) =>
 
-          if (!fields.contains(name)) abort(s"Unknown attribute $name of structure $structName")
+          if (!fields.contains(name)) abort(s"$name n'est pas un attribut de la structure $structName")
           fields(name) = fields(name).copy(value = evalUnbox(expression))
           Value.Void
 
@@ -247,7 +247,12 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       if (args.length != function.parameters.length)
         abort(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: ${function.parameters.length}")
       val values = for (arg <- args) yield evalUnbox(arg)
-      unbox(function.evaluate(values)(using currentContext.copy(currentFunction = s"FONCTION $name"), this))
+      val mismatches = values.zip(function.parameters).filterNot(_.tpe isSubTypeOf _.tpe )
+      if(mismatches.nonEmpty) throw EvaluationError.typeMismatch(mismatches.map((v, p) => s"$p <- $v").mkString(" et "))
+      val globalScope = currentContext
+          .scope
+          .copy(variables = currentContext.scope.variables.filterNot(_._2.mutable))
+      partialUnbox(function.evaluate(values)(using currentContext.copy(scope = globalScope, currentFunction = s"FONCTION $name"), this))._2
     }
 
     case ForLoop(name, from, to, step, expression) => eval {
@@ -303,10 +308,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     }
 
     case Tree(expressions) => eval {
-      for (expr <- expressions if currentContext.returned.isEmpty) {
-        evalUnbox(expr)
-        println(currentContext.stack)
-      }
+      for (expr <- expressions if currentContext.returned.isEmpty) evalUnbox(expr)
       currentContext.returned.getOrElse(Value.Void)
     }
 

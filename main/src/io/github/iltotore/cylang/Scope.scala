@@ -1,7 +1,8 @@
 package io.github.iltotore.cylang
 
-import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Structure, Value}
-import io.github.iltotore.cylang.eval.EvaluationError
+import scala.util.Random
+import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Expression, Structure, Value}
+import io.github.iltotore.cylang.eval.{EvaluationError, Evaluator}
 
 case class Scope(
                   enumerations: Map[String, Enumeration],
@@ -30,5 +31,46 @@ case class Scope(
 
 object Scope {
   
-  val empty: Scope = Scope(Map.empty, Map.empty, Map.empty, Map.empty)
+  val empty: Scope = Scope(
+    enumerations = Map.empty,
+    structures = Map.empty,
+    functions = Map(
+      "stdEcrire" -> CYFunction.Builtin(
+        tpe = CYType.Void,
+        parameters = List(Parameter("x", CYType.Any)),
+        variables = Map.empty,
+        function = ctx => {
+          println(ctx.scope.variables("x").value.value)
+          Right((ctx, Value.Void))
+        }
+      ),
+      "stdSqrt" -> CYFunction.Builtin(
+        tpe = CYType.Real,
+        parameters = List(Parameter("x", CYType.Real)),
+        variables = Map.empty,
+        function = (ctx: Context) => ctx.scope.variables("x").value match {
+
+          case Value.Number(x) if x >= 0 => Right((ctx, Value.Real(Math.sqrt(x))))
+
+          case Value.Number(x) => Left(EvaluationError(s"x doit être positif. Valeur actuelle: $x")(using ctx))
+
+          case value => Left(EvaluationError.typeMismatch(value)(using ctx))
+        }
+      ),
+      "stdAlea" -> CYFunction.Builtin(
+        tpe = CYType.Integer,
+        parameters = List(Parameter("x", CYType.Integer)),
+        variables = Map.empty,
+        function = (ctx: Context) => ctx.scope.variables("x").value match {
+
+          case Value.Integer(x) if x >= 0 => Right((ctx, Value.Integer(Random.nextInt(x))))
+
+          case Value.Integer(x) => Left(EvaluationError(s"x doit être positif. Valeur actuelle: $x")(using ctx))
+
+          case value => Left(EvaluationError.typeMismatch(value)(using ctx))
+        }
+      )
+    ),
+    variables = Map.empty
+  )
 }
