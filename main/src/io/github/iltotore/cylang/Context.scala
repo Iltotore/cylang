@@ -2,7 +2,9 @@ package io.github.iltotore.cylang
 
 import io.github.iltotore.cylang.ast.Value
 
-case class Context(scope: Scope, currentFunction: String, stack: List[Cursor], returned: Option[Value])
+import java.io.{InputStream, PrintStream}
+
+case class Context(in: InputStream, out: PrintStream, scope: Scope, currentFunction: String, stack: List[Cursor], returned: Option[Value])
 
 object Context {
   

@@ -2,7 +2,7 @@ package io.github.iltotore.cylang
 
 import scala.util.Random
 import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Expression, Structure, Value}
-import io.github.iltotore.cylang.eval.{EvaluationError, Evaluator}
+import io.github.iltotore.cylang.eval.{EvalResult, EvaluationError, Evaluator}
 
 case class Scope(
                   enumerations: Map[String, Enumeration],
@@ -40,7 +40,7 @@ object Scope {
         parameters = List(Parameter("x", CYType.Any)),
         variables = Map.empty,
         function = ctx => {
-          println(ctx.scope.variables("x").value.value)
+          ctx.out.println(ctx.scope.variables("x").value.value)
           Right((ctx, Value.Void))
         }
       ),
