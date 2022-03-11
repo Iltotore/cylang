@@ -242,18 +242,22 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       }
     }
 
-    case FunctionCall(name, args) => eval {
-      val function = currentContext.scope.functions.getOrElse(name, abort(s"Fonction inconnue: $name"))
-      if (args.length != function.parameters.length)
-        abort(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: ${function.parameters.length}")
-      val values = for (arg <- args) yield evalUnbox(arg)
-      val mismatches = values.zip(function.parameters).filterNot(_.tpe isSubTypeOf _.tpe )
-      if(mismatches.nonEmpty) throw EvaluationError.typeMismatch(mismatches.map((v, p) => s"$p <- $v").mkString(" et "))
-      val globalScope = currentContext
+    case FunctionCall(name, args) =>
+      if(name equals "LIRE") {
+        if(args.isEmpty) Left(EvaluationError(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: 1"))
+        read(args.head).map(value => (context, value))
+      } else eval {
+        val function = currentContext.scope.functions.getOrElse(name, abort(s"Fonction inconnue: $name"))
+        if (args.length != function.parameters.length)
+          abort(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: ${function.parameters.length}")
+        val values = for (arg <- args) yield evalUnbox(arg)
+        val mismatches = values.zip(function.parameters).filterNot(_.tpe isSubTypeOf _.tpe)
+        if (mismatches.nonEmpty) throw EvaluationError.typeMismatch(mismatches.map((v, p) => s"$p <- $v").mkString(" et "))
+        val globalScope = currentContext
           .scope
           .copy(variables = currentContext.scope.variables.filterNot(_._2.mutable))
-      partialUnbox(function.evaluate(values)(using currentContext.copy(scope = globalScope, currentFunction = s"FONCTION $name"), this))._2
-    }
+        partialUnbox(function.evaluate(values)(using currentContext.copy(scope = globalScope, currentFunction = s"FONCTION $name"), this))._2
+      }
 
     case ForLoop(name, from, to, step, expression) => eval {
       (evalUnbox(from), evalUnbox(to), evalUnbox(step)) match {
