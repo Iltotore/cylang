@@ -8,5 +8,5 @@ case class Context(in: InputStream, out: PrintStream, scope: Scope, currentFunct
 
 object Context {
   
-  val empty: Context = Context(Scope.empty, "en-tête du programme", List.empty, None)
+  val empty: Context = Context(System.in, System.out, Scope.empty, "en-tête du programme", List.empty, None)
 }

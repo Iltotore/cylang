@@ -475,6 +475,8 @@ object EvaluationSuite extends TestSuite {
     test("variableCall") {
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
@@ -490,6 +492,8 @@ object EvaluationSuite extends TestSuite {
     test("variableAssignment") {
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
@@ -523,6 +527,8 @@ object EvaluationSuite extends TestSuite {
       val array = Value.Array(Array(Value.Character('a'), Value.Character('b')))
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("array", CYType.Array(CYType.Character, None), array),
@@ -564,6 +570,8 @@ object EvaluationSuite extends TestSuite {
       ))
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("point", CYType.StructureInstance("Point"), instance),
@@ -585,6 +593,8 @@ object EvaluationSuite extends TestSuite {
     test("functionCall") {
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withFunction("a", CYFunction(CYType.Integer, List.empty, Map.empty, Literal(Value.Integer(2))))
@@ -613,6 +623,8 @@ object EvaluationSuite extends TestSuite {
 
     test("forLoop") {
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
@@ -643,6 +655,8 @@ object EvaluationSuite extends TestSuite {
     test("whileLoop") {
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
@@ -678,6 +692,8 @@ object EvaluationSuite extends TestSuite {
     test("doWhileLoop") {
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
@@ -714,6 +730,8 @@ object EvaluationSuite extends TestSuite {
     test("if") {
 
       given Context = Context(
+        System.in,
+        System.out,
         Scope
           .empty
           .withDeclaration("x", CYType.Integer, Value.Integer(0)),
