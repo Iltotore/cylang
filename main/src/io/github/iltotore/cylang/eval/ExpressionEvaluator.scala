@@ -245,7 +245,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     case FunctionCall(name, args) =>
       if(name equals "LIRE") {
         if(args.isEmpty) Left(EvaluationError(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: 1"))
-        read(args.head).map(value => (context, value))
+        else read(args.head).map(ctx => (ctx, Value.Void))
       } else eval {
         val function = currentContext.scope.functions.getOrElse(name, abort(s"Fonction inconnue: $name"))
         if (args.length != function.parameters.length)

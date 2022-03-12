@@ -1,13 +1,8 @@
 PROGRAMME stdLib
 
-PROCEDURE ECRIRE(x: any)
+PROCEDURE ECRIRE(x: inconnu)
 DEBUT
   stdEcrire(x)
-FIN
-
-PROCEDURE LIRE(x: any)
-DEBUT
-  stdLire(x)
 FIN
 
 FONCTION puissance(x: reel, n: entier): reel

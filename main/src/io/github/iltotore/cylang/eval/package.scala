@@ -16,15 +16,16 @@ package object eval {
 
   given Evaluator[Expression] = new ExpressionEvaluator
 
-  def read(expr: Expression)(using context: Context): Either[EvaluationError, Value] = expr match {
+  def read(expr: Expression)(using context: Context): Either[EvaluationError, Context] = expr match {
 
     case VariableCall(name) if context.scope.variables.contains(name) =>
 
       val scanner = Scanner(context.in)
 
-      context.scope.variables(name).tpe match {
+      val value = context.scope.variables(name).tpe match {
 
         case CYType.Boolean =>
+
           scanner
             .nextLine()
             .toBooleanOption
@@ -52,6 +53,11 @@ package object eval {
 
         case tpe => Left(EvaluationError(s"Impossible de lire le type $tpe directement."))
       }
+
+      for {
+        x <- value
+        scope <- context.scope.withAssignment(name, x)
+      } yield context.copy(scope = scope)
 
     case _ => Left(EvaluationError("LIRE doit prendre une variable en paramètre"))
   }
