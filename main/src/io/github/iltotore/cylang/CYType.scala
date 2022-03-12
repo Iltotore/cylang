@@ -46,7 +46,7 @@ object CYType {
 
   case object Text extends CYType {
 
-    override def name: String = "string"
+    override def name: String = "texte"
 
     override def defaultValue(using Context): Either[EvaluationError, Value] = Right(Value.Text(""))
   }
@@ -115,5 +115,5 @@ object CYType {
     override def defaultValue(using Context): Either[EvaluationError, Value] = Right(Value.Void)
   }
 
-  val rawTypes: List[CYType] = List(CYType.Integer, CYType.Real, CYType.Character, CYType.Text, CYType.Boolean)
+  val rawTypes: List[CYType] = List(CYType.Any, CYType.Integer, CYType.Real, CYType.Character, CYType.Text, CYType.Boolean)
 }
