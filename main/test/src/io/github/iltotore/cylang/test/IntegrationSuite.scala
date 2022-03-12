@@ -6,6 +6,8 @@ import io.github.iltotore.cylang.ast.Value
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.eval.given
 
+import java.io.{ByteArrayInputStream, DataInputStream, PipedInputStream, PipedOutputStream, PrintStream}
+import java.util.Scanner
 import scala.io.Source
 
 object IntegrationSuite extends TestSuite {
@@ -79,16 +81,16 @@ object IntegrationSuite extends TestSuite {
 
       val source = Source.fromInputStream(getClass.getResourceAsStream("/predef.cy")).mkString
 
-      given Context = execute(source)(using Context.empty).getOrElse(throw new RuntimeException)._1
+      given stdCtx: Context = execute(source)(using Context.empty).getOrElse(throw new RuntimeException)._1
 
       def wrap(tpe: String, code: String): String =
         s"""PROGRAMME test
-          |
-          |VARIABLE
-          |  res: $tpe
-          |DEBUT
-          |  res <- $code
-          |FIN""".stripMargin
+           |
+           |VARIABLE
+           |  res: $tpe
+           |DEBUT
+           |  res <- $code
+           |FIN""".stripMargin
 
       test("puissance") - assertMatch(
         execute(wrap("reel", "puissance(2, 4)"))
@@ -129,6 +131,73 @@ object IntegrationSuite extends TestSuite {
           .map(_._1.scope.variables("res").value)
       ) { case Right(Value.Number(120)) => }
 
+      test("io") {
+
+        val userOut = new PipedOutputStream()
+        val userIn = new PipedInputStream()
+
+        val userScanner = new Scanner(userIn)
+
+        val systemIn = new PipedInputStream(userOut)
+
+        given Context = stdCtx.copy(
+          in = systemIn,
+          out = new PrintStream(new PipedOutputStream(userIn))
+        )
+
+        test("ecrire") {
+          assertMatch(execute(
+            """PROGRAMME test
+              |DEBUT
+              |  ECRIRE("out")
+              |FIN""".stripMargin
+          )) { case Right(_) => }
+
+          assert(userScanner.nextLine() equals "out")
+        }
+
+        test("lire") {
+
+          val userPrint = new PrintStream(userOut)
+
+          def testReading(tpe: String, input: String, expected: Value): Unit = {
+
+            userPrint.println(input)
+
+            assertMatch(
+              execute(
+                s"""PROGRAMME test
+                   |
+                   |VARIABLE
+                   |  x: $tpe
+                   |DEBUT
+                   |  LIRE(x)
+                   |FIN""".stripMargin
+              ).map(_._1.scope.variables("x").value)
+            ) { case Right(x) if x equals expected => }
+          }
+
+
+          test("boolean") {
+            test - testReading("booleen", "true", Value.Bool(true))
+            test - testReading("booleen", "false", Value.Bool(false))
+          }
+
+          test("integer") - testReading("entier", "1", Value.Integer(1))
+
+          test("real") {
+            testReading("reel", "1.0", Value.Real(1.0))
+            testReading("reel", "1", Value.Real(1.0))
+          }
+
+          test("character") - testReading("caractere", "a", Value.Character('a'))
+
+          test("text") {
+            test - testReading("texte", "a", Value.Text("a"))
+            test - testReading("texte", "abc", Value.Text("abc"))
+          }
+        }
+      }
     }
   }
 }
