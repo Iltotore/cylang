@@ -13,7 +13,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  build-ubuntu:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -21,6 +21,32 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-          
-      - name: Build project
-        run: chmod u+rx millw && ./millw -i __.test
+      - name: Build and test
+        run: chmod u+rx millw && ./millw -i main.testAll
+
+  cli-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build CLI
+        run: chmod u+rx millw && ./millw -i cli.nativeLink && ./millw -i cli.assembly
+      - name: Upload native artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cylang-ubuntu
+          path: cli/nativeLink.dest/out
+      - name: Upload JVM artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cylang-jvm
+          path: cli/assembly.dest/out.jar
+
+  cli-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build CLI
+        run: chmod u+rx millw && ./millw -i cli.nativeLink
+      - name: Upload native artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cylang-windows
+          path: cli/nativeLink.dest/out
