@@ -5,6 +5,7 @@ import io.github.iltotore.cylang.ast.{Expression, Value}
 import io.github.iltotore.cylang.ast.Expression.VariableCall
 import io.github.iltotore.cylang.CYType
 
+import java.io.{BufferedReader, InputStreamReader}
 import java.util.Scanner
 import scala.io.StdIn
 
@@ -16,49 +17,55 @@ package object eval {
 
   given Evaluator[Expression] = new ExpressionEvaluator
 
-  def read(expr: Expression)(using context: Context): Either[EvaluationError, Context] = expr match {
+  def read(expr: Expression)(using context: Context): Either[EvaluationError, Context] = {
 
-    case VariableCall(name) if context.scope.variables.contains(name) =>
+    def readLine(reader: BufferedReader): String = {
+      var line = reader.readLine()
+      while (line == null) line = reader.readLine()
+      line
+    }
 
-      val scanner = Scanner(context.in)
+    expr match {
 
-      val value = context.scope.variables(name).tpe match {
+      case VariableCall(name) if context.scope.variables.contains(name) =>
 
-        case CYType.Boolean =>
+        val reader = new BufferedReader(new InputStreamReader(context.in))
 
-          scanner
-            .nextLine()
-            .toBooleanOption
-            .map(Value.Bool.apply)
-            .toRight(EvaluationError("La valeur saisie n'est pas un booléen !"))
+        val value = context.scope.variables(name).tpe match {
 
-        case CYType.Integer =>
-          scanner
-            .nextLine()
-            .toIntOption
-            .map(Value.Integer.apply)
-            .toRight(EvaluationError("La valeur saisie n'est pas un entier !"))
+          case CYType.Boolean =>
 
-        case CYType.Real =>
-          scanner
-            .nextLine()
-            .toDoubleOption
-            .map(Value.Real.apply)
-            .toRight(EvaluationError("La valeur saisie n'est pas un réel !"))
+           readLine(reader)
+              .toBooleanOption
+              .map(Value.Bool.apply)
+              .toRight(EvaluationError("La valeur saisie n'est pas un booléen !"))
 
-        case CYType.Character =>
-          Right(Value.Character(scanner.nextLine().charAt(0)))
+          case CYType.Integer =>
+            readLine(reader)
+              .toIntOption
+              .map(Value.Integer.apply)
+              .toRight(EvaluationError("La valeur saisie n'est pas un entier !"))
 
-        case CYType.Text => Right(Value.Text(scanner.nextLine()))
+          case CYType.Real =>
+            readLine(reader)
+              .toDoubleOption
+              .map(Value.Real.apply)
+              .toRight(EvaluationError("La valeur saisie n'est pas un réel !"))
 
-        case tpe => Left(EvaluationError(s"Impossible de lire le type $tpe directement."))
-      }
+          case CYType.Character =>
+            Right(Value.Character(readLine(reader).charAt(0)))
 
-      for {
-        x <- value
-        scope <- context.scope.withAssignment(name, x)
-      } yield context.copy(scope = scope)
+          case CYType.Text => Right(Value.Text(readLine(reader)))
 
-    case _ => Left(EvaluationError("LIRE doit prendre une variable en paramètre"))
+          case tpe => Left(EvaluationError(s"Impossible de lire le type $tpe directement."))
+        }
+
+        for {
+          x <- value
+          scope <- context.scope.withAssignment(name, x)
+        } yield context.copy(scope = scope)
+
+      case _ => Left(EvaluationError("LIRE doit prendre une variable en paramètre"))
+    }
   }
 }

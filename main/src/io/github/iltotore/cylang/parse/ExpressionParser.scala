@@ -23,7 +23,7 @@ object ExpressionParser extends CYParsers {
   //Literal
   def bool: Parser[Literal] = raw"(true)|(false)".r mapWithPos { x => Literal(Value.Bool(x.toBoolean)) }
 
-  def text: Parser[Literal] = "\\\".*\\\"".r mapWithPos { x => Literal(Value.Text(x.substring(1, x.length - 1))) }
+  def text: Parser[Literal] = "\\\"[^\\\"]*\\\"".r mapWithPos { x => Literal(Value.Text(x.substring(1, x.length - 1))) }
 
   def character: Parser[Literal] = raw"'.'".r mapWithPos { x => Literal(Value.Character(x.charAt(1))) }
 
