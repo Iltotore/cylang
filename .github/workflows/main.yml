@@ -27,6 +27,7 @@ jobs:
   cli-ubuntu:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Build CLI
         run: chmod u+rx millw && ./millw -i cli.nativeLink && ./millw -i cli.assembly
       - name: Upload native artifact
@@ -43,6 +44,7 @@ jobs:
   cli-windows:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Build CLI
         run: chmod u+rx millw && ./millw -i cli.nativeLink
       - name: Upload native artifact
