@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: cylang-jvm
-          path: cli/assembly.dest/out.jar
+          path: out/cli/assembly.dest/out.jar
 
   cli-windows:
     runs-on: ubuntu-latest
@@ -51,4 +51,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: cylang-windows
-          path: cli/nativeLink.dest/out
+          path: out/cli/nativeLink.dest/out
