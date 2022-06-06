@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: cylang-ubuntu
-          path: cli/nativeLink.dest/out
+          path: out/cli/nativeLink.dest/out
       - name: Upload JVM artifact
         uses: actions/upload-artifact@v3
         with:
