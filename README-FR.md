@@ -1,6 +1,8 @@
 # CYLang
 
-Le langage de programmation basé sur le pseudo-code de CYTech
+Le langage de programmation basé sur le pseudo-code de CYTech.   
+
+Read the English version [here.]()
 
 ## Introduction
 
