@@ -1,6 +1,6 @@
 <!-- Completed by Colack :) -->
 # CYLANG
-CYTech's pseudo-code based programming language
+CYTech's pseudo-code based programming language.
 ## Introduction
 CYLang is a project aiming to standardize and make executable pseudo-code in order to facilitate the introduction to computer science for students in the first year of the cycle.
 <br>
