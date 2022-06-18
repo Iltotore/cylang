@@ -34,7 +34,7 @@ object ExpressionParser extends CYParsers {
   def literalSymbol: Parser[Literal] = bool | text | character | real | integer
 
   //Misc
-  def paranthesized: Parser[Expression] = "(" ~> expression <~ ")"
+  def parenthesized: Parser[Expression] = "(" ~> expression <~ ")"
 
   def variableCall: Parser[VariableCall] = word mapWithPos VariableCall.apply
 
@@ -106,7 +106,7 @@ object ExpressionParser extends CYParsers {
   def whileLoop: Parser[WhileLoop] = "TANT QUE" ~> expression ~ "FAIRE" ~ tree("FIN TANT QUE") mapWithPos { case cond ~ _ ~ expr => WhileLoop(cond, expr) }
 
   def doWhileLoop: Parser[DoWhileLoop] = "FAIRE" ~> tree("TANT QUE") ~ expression mapWithPos { case expr ~ cond => DoWhileLoop(cond, expr)}
-  
+
   def ifElse: Parser[If] = "SI" ~> expression ~ "ALORS" ~ ifBody mapWithPos {
     case cond ~ _ ~ (expr ~ elseExpr) => If(cond, expr, elseExpr)
   }
@@ -151,6 +151,6 @@ object ExpressionParser extends CYParsers {
 
   def structureCall(expr: Expression): Parser[Expression] = ("." ~> word) mapWithPos (StructureCall(expr, _))
 
-  def invocable: Parser[Expression] = literalSymbol | paranthesized | functionCall | variableCall
+  def invocable: Parser[Expression] = literalSymbol | parenthesized | functionCall | variableCall
 
 }
