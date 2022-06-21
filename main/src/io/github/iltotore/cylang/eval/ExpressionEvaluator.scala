@@ -300,7 +300,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       Value.Void
     }
 
-    case If(condition, expression, elseExpression) => eval {
+    case IfCondition(condition, expression, elseExpression) => eval {
       if (evalUnbox(condition) match {
 
         case Value.Bool(x) => x
@@ -316,7 +316,7 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       currentContext.returned.getOrElse(Value.Void)
     }
 
-    case Return(expression) => eval {
+    case ReturnExpr(expression) => eval {
       update(currentContext.copy(returned = Some(evalUnbox(expression))))
       Value.Void
     }

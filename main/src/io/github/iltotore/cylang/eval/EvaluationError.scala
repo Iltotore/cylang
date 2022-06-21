@@ -1,9 +1,9 @@
 package io.github.iltotore.cylang.eval
 
 import io.github.iltotore.cylang.ast.Value
-import io.github.iltotore.cylang.{CYType, Context, Cursor}
+import io.github.iltotore.cylang.{CYError, CYType, Context, Cursor}
 
-case class EvaluationError(message: String, stack: List[Cursor]) extends Exception(message) {
+case class EvaluationError(message: String, stack: List[Cursor]) extends Error(message) with CYError {
 
   lazy val fullMessage: String = {
 

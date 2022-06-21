@@ -60,11 +60,11 @@ enum Expression(using val position: Position){
 
   case DoWhileLoop(condition: Expression, expression: Expression)(using position: Position)
 
-  case If(condition: Expression, expression: Expression, elseExpression: Expression)(using position: Position)
+  case IfCondition(condition: Expression, expression: Expression, elseExpression: Expression)(using position: Position)
 
   case Tree(expressions: List[Expression])(using position: Position)
 
-  case Return(expression: Expression)(using position: Position)
+  case ReturnExpr(expression: Expression)(using position: Position)
   
   case ConstantDeclaration(name: String, expression: Expression)(using position: Position)
 
