@@ -6,57 +6,96 @@ import Token.*
 //noinspection TypeAnnotation
 object ExpressionLexer extends RegexParsers {
 
-  def comma = "," ^^ (_ => Comma)
-  def dot = "." ^^ (_ => Dot)
-  def colon = ":" ^^ (_ => Colon)
-  def program = "PROGRAMME" ^^ (_ => Program)
-  def begin = "DEBUT" ^^ (_ => Begin)
-  def end = "FIN" ^^ (_ => End)
-  def variable = "VARIABLE" ^^ (_ => Variable)
-  def function = "FUNCTION" ^^ (_ => Function)
-  def procedure = "PROCEDURE" ^^ (_ => Procedure)
-  def constant = "CONSTANTE" ^^ (_ => Constant)
-  def structure = "STRUCTURE" ^^ (_ => Structure)
-  def enumeration = "ENUMERATION" ^^ (_ => Enumeration)
-  def assignment = "<-" ^^ (_ => Assignment)
-  def ifCond = "SI" ^^ (_ => If)
-  def thenCond = "THEN" ^^ (_ => Then)
-  def elseCond = "SINON" ^^ (_ => Else)
-  def forLoop = "POUR" ^^ (_ => For)
-  def from = "DE" ^^ (_ => From)
-  def to = "A" ^^ (_ => To)
-  def step = "PAS DE" ^^ (_ => Step)
-  def whileLoop = "TANT QUE" ^^ (_ => While)
-  def doToken = "FAIRE" ^^ (_ => Do)
-  def returnToken = "RETOURNER" ^^ (_ => Return)
-  def arrayOf = "tableau de" ^^ (_ => ArrayOf)
-  def arraySize = "de taille" ^^ (_ => ArraySize)
-  def literalBool = "(true)|(false)".r ^^ (x => LiteralBool(x.toBoolean))
+  def symbol(word: String, token: Token): Parser[Token] = word ^^ (_ => token)
+
+  def keyword(word: String, token: Token): Parser[Token] = (s"$word($$|$whiteSpace)").r ^^ (_ => token)
+
+  def comma = symbol(",", Comma)
+
+  def dot = symbol(".", Dot)
+
+  def colon = symbol(":", Colon)
+
+  def parenthesisOpen = symbol("(", ParenthesisOpen)
+
+  def parenthesisClose = symbol(")", ParenthesisClose)
+
+  def bracketOpen = symbol("[", BracketOpen)
+
+  def bracketClose = symbol("]", BracketClose)
+
+  def assignment = symbol("<-", Assignment)
+
+  def program = keyword("PROGRAMME", Program)
+
+  def begin = keyword("DEBUT", Begin)
+
+  def end = keyword("FIN", End)
+
+  def variable = keyword("VARIABLE", Variable)
+
+  def function = keyword("FONCTION", Function)
+
+  def procedure = keyword("PROCEDURE", Procedure)
+
+  def constant = keyword("CONSTANTE", Constant)
+
+  def structure = keyword("STRUCTURE", Structure)
+
+  def enumeration = keyword("ENUMERATION", Enumeration)
+
+  def ifCond = keyword("SI", If)
+
+  def thenCond = keyword("ALORS", Then)
+
+  def elseCond = keyword("SINON", Else)
+
+  def and = keyword("ET", And)
+
+  def or = keyword("OU", Or)
+
+  def forLoop = keyword("POUR", For)
+
+  def from = keyword("DE", From)
+
+  def to = keyword("A", To)
+
+  def step = keyword("PAS DE", Step)
+
+  def whileLoop = keyword("TANT QUE", While)
+
+  def doToken = keyword("FAIRE", Do)
+
+  def returnToken = keyword("RETOURNER", Return)
+
+  def arrayOf = keyword("tableau de", ArrayOf)
+
+  def arraySize = keyword("de taille", ArraySize)
+
+  def literalBool = "(vrai)|(faux)".r ^^ (x => LiteralBool(x equals "vrai"))
+
   def literalInt = raw"\d+".r ^^ (x => LiteralInt(x.toInt))
-  def literalReal = raw"\d+(.\d*)?".r ^^ (x => LiteralReal(x.toDouble))
-  def literalChar = "'[^']'".r ^^ (x => LiteralChar(x.charAt(0)))
-  def literalText = "\"[^\"]*\"".r ^^ LiteralText.apply
+
+  def literalReal = raw"\d+\.\d+".r ^^ (x => LiteralReal(x.toDouble))
+
+  def literalChar = "'[^']'".r ^^ (x => LiteralChar(x.charAt(1)))
+
+  def literalText = "\"[^\"]*\"".r ^^ (x => LiteralText(x.substring(1, x.length-1)))
+
+  def operator = raw"[+\-*/!]|(DIV)|(MOD)|([<>]=?)|(!?=)".r ^^ Operator.apply
+
   def identifier = raw"\w+".r ^^ Identifier.apply
-  def parenthesisOpen = "(" ^^ (_ => ParenthesisOpen)
-  def parenthesisClose = ")" ^^ (_ => ParenthesisClose)
-  def bracketOpen = "[" ^^ (_ => BracketOpen)
-  def bracketClose = "]" ^^ (_ => BracketClose)
-  def comparisonOperator = "([<>]=?)|(!?=)".r ^^ ComparisonOperator.apply
-  def arithmeticOperator = "[+-]".r ^^ ArithmeticOperator.apply
-  def termOperator = raw"[*/]|(DIV)|(MOD)".r ^^ TermOperator.apply
-  def unaryOperator = raw"[+\-!]".r ^^ UnaryOperator.apply
 
   def tokens: Parser[List[Token]] = phrase(rep1(
-    comma | dot | colon | program | begin | end | variable | function | procedure | structure | enumeration | assignment
-    | ifCond | thenCond | elseCond | forLoop | from | to | step | whileLoop | doToken | returnToken | arrayOf
-    | arraySize | literalBool | literalInt | literalReal | literalChar | literalText | identifier | parenthesisOpen
-    | parenthesisClose | bracketOpen | bracketClose | comparisonOperator
-    | arithmeticOperator | unaryOperator
+    comma | dot | colon | parenthesisOpen | parenthesisClose | bracketOpen | bracketClose | assignment | program | begin
+      | end | variable | function | procedure | constant | structure | enumeration | ifCond | thenCond | elseCond | and
+      | or | forLoop | from | to | step | whileLoop | doToken | returnToken | arrayOf | arraySize | literalBool
+      | literalReal | literalInt | literalChar | literalText | operator | identifier
   ))
 
   def apply(code: String): Either[ParsingError, List[Token]] = parseAll(tokens, code) match {
     case Success(result, _) => Right(result)
-    case Failure(msg, _) => Left(ParsingError(msg))
-    case Error(msg, _) => Left(ParsingError(msg))
+    case failure: Failure => Left(ParsingError(failure.toString))
+    case err: Error => Left(ParsingError(err.toString))
   }
 }

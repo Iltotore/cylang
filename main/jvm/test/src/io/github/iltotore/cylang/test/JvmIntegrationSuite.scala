@@ -17,7 +17,7 @@ object JvmIntegrationSuite extends TestSuite {
 
       val source = Source.fromInputStream(getClass.getResourceAsStream("/predef.cy")).mkString
 
-      given stdCtx: Context = execute(source)(using Context.empty).getOrElse(throw new RuntimeException)._1
+      given stdCtx: Context = execute(source)(using Context.empty).fold(throw _, _._1)
 
       def wrap(tpe: String, code: String): String =
         s"""PROGRAMME test

@@ -44,5 +44,12 @@ trait CYParsers extends Parsers {
         p(in).map(f(using in.pos))
       }
     }
+
+    def partialMapWithPos[U](f: Position ?=> PartialFunction[T, U]): Parser[U] = new Parser {
+
+      override def apply(in: Input): ParseResult[U] = {
+        p(in).mapPartial(f(using in.pos), r => s"Constructor function not defined at $r")
+      }
+    }
   }
 }

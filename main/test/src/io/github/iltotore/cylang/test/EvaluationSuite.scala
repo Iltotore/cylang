@@ -740,7 +740,7 @@ object EvaluationSuite extends TestSuite {
         None
       )
 
-      def ast(condition: Boolean, elseCond: Expression) = If(
+      def ast(condition: Boolean, elseCond: Expression) = IfCondition(
         Literal(Value.Bool(condition)),
         VariableAssignment("x", Literal(Value.Integer(1))),
         elseCond
@@ -763,7 +763,7 @@ object EvaluationSuite extends TestSuite {
 
       test - assertMatch(
         Tree(List(
-          Return(Literal(Value.Integer(0)))
+          ReturnExpr(Literal(Value.Integer(0)))
         )).evaluate
       ) { case Right((_, Value.Integer(0))) => }
 
@@ -858,7 +858,7 @@ object EvaluationSuite extends TestSuite {
                     expression = Multiplication(VariableCall("result"), VariableCall("i"))
                   )
                 ),
-                Return(VariableCall("result"))
+                ReturnExpr(VariableCall("result"))
               ))
             )
           )

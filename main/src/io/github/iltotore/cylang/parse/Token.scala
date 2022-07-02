@@ -3,9 +3,17 @@ package io.github.iltotore.cylang.parse
 import scala.util.parsing.input.Positional
 
 enum Token extends Positional {
+  //Symbols
   case Comma
   case Dot
   case Colon
+  case ParenthesisOpen
+  case ParenthesisClose
+  case BracketOpen
+  case BracketClose
+  case Assignment
+  
+  //Keywords
   case Program
   case Begin
   case End
@@ -15,10 +23,11 @@ enum Token extends Positional {
   case Constant
   case Structure
   case Enumeration
-  case Assignment
   case If
   case Then
   case Else
+  case And
+  case Or
   case For
   case From
   case To
@@ -28,18 +37,13 @@ enum Token extends Positional {
   case Return
   case ArrayOf
   case ArraySize
+  
+  //Misc
   case LiteralBool(value: Boolean)
   case LiteralInt(value: Int)
   case LiteralReal(value: Double)
   case LiteralChar(value: Char)
   case LiteralText(value: String)
   case Identifier(value: String)
-  case ParenthesisOpen
-  case ParenthesisClose
-  case BracketOpen
-  case BracketClose
-  case ComparisonOperator(op: String)
-  case ArithmeticOperator(op: String)
-  case TermOperator(op: String)
-  case UnaryOperator(op: String)
+  case Operator(value: String)
 }

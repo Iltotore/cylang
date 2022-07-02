@@ -21,10 +21,7 @@ object ExpressionParser extends CYParsers {
   private def literalChar: Parser[LiteralChar] = accept("char literal", { case x: LiteralChar => x })
   private def literalText: Parser[LiteralText] = accept("text literal", { case x: LiteralText => x })
   private def identifier: Parser[Identifier] = accept("identifier", { case x: Identifier => x })
-  private def comparisonOp: Parser[ComparisonOperator] = accept("comparison operator", { case x: ComparisonOperator => x })
-  private def arithmeticOp: Parser[ArithmeticOperator] = accept("arithmetic operator", { case x: ArithmeticOperator => x })
-  private def termOp: Parser[TermOperator] = accept("term operator", { case x: TermOperator => x })
-  private def unaryOp: Parser[UnaryOperator] = accept("unary operator", { case x: UnaryOperator => x })
+  private def operator: Parser[Operator] = accept("operator", { case x: Operator => x })
 
   def program: Parser[ProgramDeclaration] = Program ~> identifier ~ rep(not(body) ~> declaration) ~ body mapWithPos {
     case Identifier(name) ~ declarations ~ main => ProgramDeclaration(name, declarations, main)
@@ -92,20 +89,6 @@ object ExpressionParser extends CYParsers {
 
   def declaration: Parser[Expression] = constantDeclaration | enumerationDeclaration | structureDeclaration | functionDeclaration | procedureDeclaration
 
-  private val binaryOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
-    "=" -> Equality.apply,
-    ">" -> Greater.apply,
-    ">=" -> GreaterEqual.apply,
-    "<" -> Less.apply,
-    "<=" -> LessEqual.apply,
-    "+" -> Addition.apply,
-    "-" -> Subtraction.apply,
-    "*" -> Multiplication.apply,
-    "/" -> Division.apply,
-    "DIV" -> WholeDivision.apply,
-    "%" -> Modulo.apply
-  )
-
   //Binary Operators
   //POUR i DE 0 A 10 FAIRE
   def forLoop: Parser[ForLoop] = For ~> identifier ~ From ~ expression ~ To ~ expression ~ (Step ~> expression).? ~ Do ~ tree(End ~ For) mapWithPos {
@@ -123,7 +106,7 @@ object ExpressionParser extends CYParsers {
 
   def ifBody: Parser[~[Expression, Expression]] = (tree(Else) ~ (ifElse | tree(End ~ If))) | (tree(End ~ If) ~ empty)
 
-  def treeReturn: Parser[Expression] = Return ~> expression mapWithPos ReturnExpr.apply
+  def treeReturn: Parser[Expression] = Return ~> (expression | empty) mapWithPos ReturnExpr.apply
 
   def treeInvocable: Parser[Expression] = forLoop | whileLoop | doWhileLoop | ifElse | treeReturn
 
@@ -135,11 +118,25 @@ object ExpressionParser extends CYParsers {
 
   def structureAssignment: Parser[Expression] = ((invocable ~ (Dot ~> identifier) ~ Assignment ~ comparison) mapWithPos { case structure ~ Identifier(field) ~ _ ~ expr => StructureAssignment(structure, field, expr) }) | comparison
 
-  def comparison: Parser[Expression] = arith * (comparisonOp mapWithPos { case ComparisonOperator(op) => binaryOps(op) })
+  private val compOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "=" -> Equality.apply,
+    ">" -> Greater.apply,
+    ">=" -> GreaterEqual.apply,
+    "<" -> Less.apply,
+    "<=" -> LessEqual.apply
+  )
 
-  def arith: Parser[Expression] = term * (arithmeticOp mapWithPos { case ArithmeticOperator(op) => binaryOps(op) })
+  private val arithOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "+" -> Addition.apply,
+    "-" -> Subtraction.apply
+  )
 
-  def term: Parser[Expression] = unary * (termOp mapWithPos { case TermOperator(op) => binaryOps(op) })
+  private val termOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "*" -> Multiplication.apply,
+    "/" -> Division.apply,
+    "DIV" -> WholeDivision.apply,
+    "MOD" -> Modulo.apply
+  )
 
   private val unaryOps: Map[String, Position ?=> Expression => Expression] = Map(
     "+" -> (x => x),
@@ -147,8 +144,14 @@ object ExpressionParser extends CYParsers {
     "!" -> Not.apply
   )
 
-  def unary: Parser[Expression] = unaryOp.? ~ (invocable >> (left => furtherCall(left) | success(left))) mapWithPos {
-    case Some(UnaryOperator(op)) ~ expr => unaryOps(op)(expr)
+  def comparison: Parser[Expression] = arith * (operator partialMapWithPos { case Operator(op) if compOps.contains(op) => compOps(op) })
+
+  def arith: Parser[Expression] = term * (operator partialMapWithPos { case Operator(op) if arithOps.contains(op) => arithOps(op) })
+
+  def term: Parser[Expression] = unary * (operator partialMapWithPos { case Operator(op) if termOps.contains(op) => termOps(op) })
+
+  def unary: Parser[Expression] = operator.? ~ (invocable >> (left => furtherCall(left) | success(left))) partialMapWithPos {
+    case Some(Operator(op)) ~ expr if unaryOps.contains(op) => unaryOps(op)(expr)
 
     case None ~ expr => expr
   }
