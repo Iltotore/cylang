@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.test
 
 import utest.*
 
-import scala.util.parsing.input.Position
+import scala.util.parsing.input.{Position, NoPosition}
 import io.github.iltotore.cylang.{CYType, FixedPosition, Parameter}
 import io.github.iltotore.cylang.ast.{Body, Expression, Value}
 import io.github.iltotore.cylang.ast.Expression.*
@@ -13,7 +13,12 @@ import io.github.iltotore.cylang.parse.ExpressionParser.*
 
 object ParsingSuite extends TestSuite {
 
-  private def assertSuccess[A](parser: Parser[A], tokens: List[Token], expected: A): Unit = assertMatch(parser(TokenReader(tokens))) { case Success(res, in) if res.equals(expected) && in.atEnd => }
+  private def assertSuccess[A](parser: Parser[A], tokens: List[Token], expected: A): Unit = {
+    val result = parser(TokenReader(tokens))
+    Predef.assert(result.successful, "Result is not successful")
+    Predef.assert(result.next.atEnd, s"Remaining input: ${result.next}")
+    Predef.assert(result.get.equals(expected))
+  }
 
   private def assertFailure[A](parser: Parser[A], tokens: List[Token]): Unit = assertMatch(parser(TokenReader(tokens))) {
     case Success(_, in) if !in.atEnd =>
@@ -24,7 +29,7 @@ object ParsingSuite extends TestSuite {
 
   val tests: Tests = Tests {
 
-    given Position = FixedPosition(0, 0, "")
+    given Position = NoPosition
 
     test("literal") {
       test("bool") - assertLiteral(bool, LiteralBool(true), Value.Bool(true))
@@ -129,7 +134,7 @@ object ParsingSuite extends TestSuite {
               )
             )
 
-            assertSuccess(expression, List(LiteralInt(21), Operator("="), ParenthesisOpen, LiteralInt(5), Operator("+"), LiteralInt(2), ParenthesisClose, Operator("*"), LiteralInt(3)), expected)
+            assertSuccess(expression, List(LiteralInt(21), Operator("="), ParenthesisOpen(), LiteralInt(5), Operator("+"), LiteralInt(2), ParenthesisClose(), Operator("*"), LiteralInt(3)), expected)
           }
         }
 
@@ -145,7 +150,7 @@ object ParsingSuite extends TestSuite {
         )
       ))
 
-      assertSuccess(tree(End), List(LiteralInt(1), Operator("+"), LiteralInt(1), End), expected)
+      assertSuccess(tree(End()), List(LiteralInt(1), Operator("+"), LiteralInt(1), End()), expected)
     }
 
     test("forLoop") {
@@ -160,7 +165,7 @@ object ParsingSuite extends TestSuite {
           Tree(List.empty)
         )
 
-        assertSuccess(forLoop, List(For, Identifier("i"), From, LiteralInt(0), To, LiteralInt(10), Do, End, For), expected)
+        assertSuccess(forLoop, List(For(), Identifier("i"), From(), LiteralInt(0), To(), LiteralInt(10), Do(), End(), For()), expected)
       }
 
       test("withStep") {
@@ -173,7 +178,7 @@ object ParsingSuite extends TestSuite {
           Tree(List.empty)
         )
 
-        assertSuccess(forLoop, List(For, Identifier("i"), From, LiteralInt(0), To, LiteralInt(10), Step, LiteralInt(2), Do, End, For), expected)
+        assertSuccess(forLoop, List(For(), Identifier("i"), From(), LiteralInt(0), To(), LiteralInt(10), Step(), LiteralInt(2), Do(), End(), For()), expected)
       }
     }
 
@@ -184,7 +189,7 @@ object ParsingSuite extends TestSuite {
         Tree(List.empty)
       )
 
-      assertSuccess(whileLoop, List(While, LiteralBool(true), Do, End, While), expected)
+      assertSuccess(whileLoop, List(While(), LiteralBool(true), Do(), End(), While()), expected)
     }
 
     test("doWhileLoop") {
@@ -194,7 +199,7 @@ object ParsingSuite extends TestSuite {
         Tree(List.empty)
       )
 
-      assertSuccess(doWhileLoop, List(Do, While, LiteralBool(true)), expected)
+      assertSuccess(doWhileLoop, List(Do(), While(), LiteralBool(true)), expected)
     }
 
     test("if") {
@@ -207,7 +212,7 @@ object ParsingSuite extends TestSuite {
           Empty()
         )
 
-        assertSuccess(ifElse, List(If, LiteralBool(true), Then, End, If), expected)
+        assertSuccess(ifElse, List(If(), LiteralBool(true), Then(), End(), If()), expected)
       }
 
       test("withElse") {
@@ -218,7 +223,7 @@ object ParsingSuite extends TestSuite {
           Tree(List.empty)
         )
 
-        assertSuccess(ifElse, List(If, LiteralBool(true), Then, Else, End, If), expected)
+        assertSuccess(ifElse, List(If(), LiteralBool(true), Then(), Else(), End(), If()), expected)
       }
 
       test("withElseIf") {
@@ -233,47 +238,47 @@ object ParsingSuite extends TestSuite {
           )
         )
 
-        assertSuccess(ifElse, List(If, LiteralBool(true), Then, Else, If, LiteralBool(true), Then, Else, End, If), expected)
+        assertSuccess(ifElse, List(If(), LiteralBool(true), Then(), Else(), If(), LiteralBool(true), Then(), Else(), End(), If()), expected)
       }
     }
 
     test("return") {
-      test("void") - assertSuccess(treeReturn, List(Return), ReturnExpr(Empty()))
-      test("value") - assertSuccess(treeReturn, List(Return, LiteralInt(1)), ReturnExpr(Literal(Value.Integer(1))))
+      test("void") - assertSuccess(treeReturn, List(Return()), ReturnExpr(Empty()))
+      test("value") - assertSuccess(treeReturn, List(Return(), LiteralInt(1)), ReturnExpr(Literal(Value.Integer(1))))
     }
 
     test("variableCall") - assertSuccess(variableCall, List(Identifier("var")), VariableCall("var"))
 
     test("functionCall") {
-      test("empty") - assertSuccess(functionCall, List(Identifier("test"), ParenthesisOpen, ParenthesisClose), FunctionCall("test", List.empty))
-      test("withArgs") - assertSuccess(functionCall, List(Identifier("test"), ParenthesisOpen, LiteralInt(1), ParenthesisClose), FunctionCall("test", List(Literal(Value.Integer(1)))))
+      test("empty") - assertSuccess(functionCall, List(Identifier("test"), ParenthesisOpen(), ParenthesisClose()), FunctionCall("test", List.empty))
+      test("withArgs") - assertSuccess(functionCall, List(Identifier("test"), ParenthesisOpen(), LiteralInt(1), ParenthesisClose()), FunctionCall("test", List(Literal(Value.Integer(1)))))
     }
 
-    test("arrayCall") - assertSuccess(unary, List(Identifier("arr"), BracketOpen, LiteralInt(1), BracketClose), ArrayCall(VariableCall("arr"), Literal(Value.Integer(1))))
+    test("arrayCall") - assertSuccess(unary, List(Identifier("arr"), BracketOpen(), LiteralInt(1), BracketClose()), ArrayCall(VariableCall("arr"), Literal(Value.Integer(1))))
 
-    test("structureCall") - assertSuccess(unary, List(Identifier("struct"), Dot, Identifier("x")), StructureCall(VariableCall("struct"), "x"))
+    test("structureCall") - assertSuccess(unary, List(Identifier("struct"), Dot(), Identifier("x")), StructureCall(VariableCall("struct"), "x"))
 
-    test("variableAssignment") - assertSuccess(variableAssignment, List(Identifier("var"), Assignment, LiteralInt(1)), VariableAssignment("var", Literal(Value.Integer(1))))
+    test("variableAssignment") - assertSuccess(variableAssignment, List(Identifier("var"), Assignment(), LiteralInt(1)), VariableAssignment("var", Literal(Value.Integer(1))))
 
-    test("arrayAssignment") - assertSuccess(arrayAssignment, List(Identifier("arr"), BracketOpen, LiteralInt(1), BracketClose, Assignment, LiteralInt(3)), ArrayAssignment(VariableCall("arr"), Literal(Value.Integer(1)), Literal(Value.Integer(3))))
+    test("arrayAssignment") - assertSuccess(arrayAssignment, List(Identifier("arr"), BracketOpen(), LiteralInt(1), BracketClose(), Assignment(), LiteralInt(3)), ArrayAssignment(VariableCall("arr"), Literal(Value.Integer(1)), Literal(Value.Integer(3))))
 
-    test("structureAssignment") - assertSuccess(structureAssignment, List(Identifier("struct"), Dot, Identifier("x"), Assignment, LiteralInt(1)), StructureAssignment(VariableCall("struct"), "x", Literal(Value.Integer(1))))
+    test("structureAssignment") - assertSuccess(structureAssignment, List(Identifier("struct"), Dot(), Identifier("x"), Assignment(), LiteralInt(1)), StructureAssignment(VariableCall("struct"), "x", Literal(Value.Integer(1))))
 
     test("type") {
       test("basic") - assertSuccess(cyType, List(Identifier("entier")), CYType.Integer)
       test("array") {
-        test("unknownSize") - assertSuccess(cyType, List(ArrayOf, Identifier("entier")), CYType.Array(CYType.Integer, None))
+        test("unknownSize") - assertSuccess(cyType, List(ArrayOf(), Identifier("entier")), CYType.Array(CYType.Integer, None))
         test("knownSize") {
-          test - assertSuccess(cyType, List(ArrayOf, Identifier("entier"), ArraySize, LiteralInt(10)), CYType.Array(CYType.Integer, Some(10)))
-          test - assertFailure(cyType, List(ArrayOf, Identifier("entier"), ArraySize, LiteralReal(10.0)))
+          test - assertSuccess(cyType, List(ArrayOf(), Identifier("entier"), ArraySize(), LiteralInt(10)), CYType.Array(CYType.Integer, Some(10)))
+          test - assertFailure(cyType, List(ArrayOf(), Identifier("entier"), ArraySize(), LiteralReal(10.0)))
         }
       }
       test("structure") - assertSuccess(cyType, List(Identifier("Point")), CYType.StructureInstance("Point"))
     }
 
-    test("constantDeclaration") - assertSuccess(constantDeclaration, List(Constant, Identifier("x"), Assignment, LiteralInt(1)), ConstantDeclaration("x", Literal(Value.Integer(1))))
+    test("constantDeclaration") - assertSuccess(constantDeclaration, List(Constant(), Identifier("x"), Assignment(), LiteralInt(1)), ConstantDeclaration("x", Literal(Value.Integer(1))))
 
-    test("enumerationDeclaration") - assertSuccess(enumerationDeclaration, List(Enumeration, Identifier("Couleur"), Identifier("BLEU"), End, Enumeration), EnumerationDeclaration("Couleur", List("BLEU")))
+    test("enumerationDeclaration") - assertSuccess(enumerationDeclaration, List(Enumeration(), Identifier("Couleur"), Identifier("BLEU"), End(), Enumeration()), EnumerationDeclaration("Couleur", List("BLEU")))
 
     test("structureDeclaration") {
 
@@ -285,7 +290,7 @@ object ParsingSuite extends TestSuite {
         )
       )
 
-      assertSuccess(structureDeclaration, List(Structure, Identifier("Point"), Identifier("x"), Colon, Identifier("reel"), Identifier("y"), Colon, Identifier("reel"), End, Structure), expected)
+      assertSuccess(structureDeclaration, List(Structure(), Identifier("Point"), Identifier("x"), Colon(), Identifier("reel"), Identifier("y"), Colon(), Identifier("reel"), End(), Structure()), expected)
     }
 
     test("functionDeclaration") {
@@ -297,7 +302,7 @@ object ParsingSuite extends TestSuite {
         Body(List.empty, Tree(List(ReturnExpr(Literal(Value.Bool(true))))))
       )
 
-      assertSuccess(functionDeclaration, List(Function, Identifier("test"), ParenthesisOpen, Identifier("x"), Colon, Identifier("entier"), ParenthesisClose, Colon, Identifier("booleen"), Begin, Return, LiteralBool(true), End), expected)
+      assertSuccess(functionDeclaration, List(Function(), Identifier("test"), ParenthesisOpen(), Identifier("x"), Colon(), Identifier("entier"), ParenthesisClose(), Colon(), Identifier("booleen"), Begin(), Return(), LiteralBool(true), End()), expected)
     }
 
     test("procedureDeclaration") {
@@ -309,7 +314,7 @@ object ParsingSuite extends TestSuite {
         Body(List.empty, Tree(List.empty))
       )
 
-      assertSuccess(procedureDeclaration, List(Procedure, Identifier("test"), ParenthesisOpen, Identifier("x"), Colon, Identifier("entier"), ParenthesisClose, Begin, End), expected)
+      assertSuccess(procedureDeclaration, List(Procedure(), Identifier("test"), ParenthesisOpen(), Identifier("x"), Colon(), Identifier("entier"), ParenthesisClose(), Begin(), End()), expected)
     }
   }
 }

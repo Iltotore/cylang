@@ -23,7 +23,7 @@ object ExpressionParser extends CYParsers {
   private def identifier: Parser[Identifier] = accept("identifier", { case x: Identifier => x })
   private def operator: Parser[Operator] = accept("operator", { case x: Operator => x })
 
-  def program: Parser[ProgramDeclaration] = Program ~> identifier ~ rep(not(body) ~> declaration) ~ body mapWithPos {
+  def program: Parser[ProgramDeclaration] = Program() ~> identifier ~ rep(not(body) ~> declaration) ~ body mapWithPos {
     case Identifier(name) ~ declarations ~ main => ProgramDeclaration(name, declarations, main)
   }
 
@@ -41,11 +41,11 @@ object ExpressionParser extends CYParsers {
   def literalSymbol: Parser[Literal] = bool | text | character | real | integer
 
   //Misc
-  def parenthesized: Parser[Expression] = ParenthesisOpen ~> expression <~ ParenthesisClose
+  def parenthesized: Parser[Expression] = ParenthesisOpen() ~>! expression <~! ParenthesisClose()
 
   def variableCall: Parser[VariableCall] = identifier mapWithPos { case Identifier(name) => VariableCall(name) }
 
-  def functionCall: Parser[FunctionCall] = identifier ~ (ParenthesisOpen ~> repsep(expression, Comma) <~ ParenthesisClose) mapWithPos {
+  def functionCall: Parser[FunctionCall] = identifier ~ (ParenthesisOpen() ~>! repsep(expression, Comma()) <~! ParenthesisClose()) mapWithPos {
     case Identifier(name) ~ args => FunctionCall(name, args)
   }
 
@@ -56,34 +56,34 @@ object ExpressionParser extends CYParsers {
       .getOrElse(CYType.StructureInstance(name))
   }
 
-  def arrayType: Parser[CYType] = ArrayOf ~> cyType ~ (ArraySize ~> literalInt).? ^^ {
+  def arrayType: Parser[CYType] = ArrayOf() ~>! cyType ~! (ArraySize() ~> literalInt).? ^^ {
     case tpe ~ size => CYType.Array(tpe, size.map(_.value))
   }
 
   def cyType: Parser[CYType] = arrayType | rawType
 
-  def param: Parser[Parameter] = identifier ~ Colon ~ cyType ^^ { case Identifier(name) ~ _ ~ tpe => Parameter(name, tpe) }
+  def param: Parser[Parameter] = identifier ~ Colon() ~! cyType ^^ { case Identifier(name) ~ _ ~ tpe => Parameter(name, tpe) }
 
-  def body: Parser[Body] = (Variable ~> rep(not(Begin) ~> param)).? ~ Begin ~ tree(End) ^^ {
+  def body: Parser[Body] = (Variable() ~>! rep(not(Begin()) ~>! param)).? ~! Begin() ~! tree(End()) ^^ {
     case Some(variables) ~ _ ~ expr => Body(variables, expr)
     case None ~ _ ~ expr => Body(List.empty, expr)
   }
 
-  def constantDeclaration: Parser[ConstantDeclaration] = Constant ~> identifier ~ Assignment ~ expression mapWithPos { case Identifier(name) ~ _ ~ expr => ConstantDeclaration(name, expr) }
+  def constantDeclaration: Parser[ConstantDeclaration] = Constant() ~>! identifier ~! Assignment() ~! expression mapWithPos { case Identifier(name) ~ _ ~ expr => ConstantDeclaration(name, expr) }
 
-  def enumerationDeclaration: Parser[EnumerationDeclaration] = Enumeration ~> identifier ~ rep(not(End ~ Enumeration) ~> Comma.? ~> identifier) <~ (End ~ Enumeration) mapWithPos {
+  def enumerationDeclaration: Parser[EnumerationDeclaration] = Enumeration() ~>! identifier ~! rep(not(End() ~! Enumeration()) ~>! Comma().? ~>! identifier) <~ (End() ~ Enumeration()) mapWithPos {
     case Identifier(name) ~ fields => EnumerationDeclaration(name, fields.map(_.value))
   }
 
-  def structureDeclaration: Parser[StructureDeclaration] = Structure ~> identifier ~ rep(not(End ~ Structure) ~> param) <~ (End ~ Structure) mapWithPos {
+  def structureDeclaration: Parser[StructureDeclaration] = Structure() ~>! identifier ~! rep(not(End() ~! Structure()) ~>! param) <~ (End() ~! Structure()) mapWithPos {
     case Identifier(name) ~ fields => StructureDeclaration(name, fields)
   }
 
-  def functionDeclaration: Parser[FunctionDeclaration] = Function ~> identifier ~ (ParenthesisOpen ~> repsep(param, Comma) <~ ParenthesisClose) ~ Colon ~ cyType ~ body mapWithPos {
+  def functionDeclaration: Parser[FunctionDeclaration] = Function() ~>! identifier ~! (ParenthesisOpen() ~>! repsep(param, Comma()) <~! ParenthesisClose()) ~! Colon() ~! cyType ~! body mapWithPos {
     case Identifier(name) ~ params ~ _ ~ tpe ~ b => FunctionDeclaration(name, tpe, params, b)
   }
 
-  def procedureDeclaration: Parser[FunctionDeclaration] = Procedure ~> identifier ~ (ParenthesisOpen ~> repsep(param, Comma) <~ ParenthesisClose) ~ body mapWithPos {
+  def procedureDeclaration: Parser[FunctionDeclaration] = Procedure() ~> identifier ~ (ParenthesisOpen() ~> repsep(param, Comma()) <~ ParenthesisClose()) ~ body mapWithPos {
     case Identifier(name) ~ params ~ b => FunctionDeclaration(name, CYType.Void, params, b)
   }
 
@@ -91,32 +91,32 @@ object ExpressionParser extends CYParsers {
 
   //Binary Operators
   //POUR i DE 0 A 10 FAIRE
-  def forLoop: Parser[ForLoop] = For ~> identifier ~ From ~ expression ~ To ~ expression ~ (Step ~> expression).? ~ Do ~ tree(End ~ For) mapWithPos {
+  def forLoop: Parser[ForLoop] = For() ~> identifier ~ From() ~ expression ~ To() ~ expression ~ (Step() ~> expression).? ~ Do() ~ tree(End() ~ For()) mapWithPos {
     case Identifier(param) ~ _ ~ from ~ _ ~ to ~ Some(step) ~ _ ~ expr => ForLoop(param, from, to, step, expr)
     case Identifier(param) ~ _ ~ from ~ _ ~ to ~ None ~ _ ~ expr => ForLoop(param, from, to, Literal(Value.Integer(1)), expr)
   }
 
-  def whileLoop: Parser[WhileLoop] = While ~> expression ~ Do ~ tree(End ~ While) mapWithPos { case cond ~ _ ~ expr => WhileLoop(cond, expr) }
+  def whileLoop: Parser[WhileLoop] = While() ~> expression ~ Do() ~ tree(End() ~ While()) mapWithPos { case cond ~ _ ~ expr => WhileLoop(cond, expr) }
 
-  def doWhileLoop: Parser[DoWhileLoop] = Do ~> tree(While) ~ expression mapWithPos { case expr ~ cond => DoWhileLoop(cond, expr)}
+  def doWhileLoop: Parser[DoWhileLoop] = Do() ~> tree(While()) ~ expression mapWithPos { case expr ~ cond => DoWhileLoop(cond, expr)}
 
-  def ifElse: Parser[IfCondition] = If ~> expression ~ Then ~ ifBody mapWithPos {
+  def ifElse: Parser[IfCondition] = If() ~> expression ~ Then() ~ ifBody mapWithPos {
     case cond ~ _ ~ (expr ~ elseExpr) => IfCondition(cond, expr, elseExpr)
   }
 
-  def ifBody: Parser[~[Expression, Expression]] = (tree(Else) ~ (ifElse | tree(End ~ If))) | (tree(End ~ If) ~ empty)
+  def ifBody: Parser[~[Expression, Expression]] = (tree(Else()) ~ (ifElse | tree(End() ~ If()))) | (tree(End() ~ If()) ~ empty)
 
-  def treeReturn: Parser[Expression] = Return ~> (expression | empty) mapWithPos ReturnExpr.apply
+  def treeReturn: Parser[Expression] = Return() ~> (expression | empty) mapWithPos ReturnExpr.apply
 
   def treeInvocable: Parser[Expression] = forLoop | whileLoop | doWhileLoop | ifElse | treeReturn
 
-  def tree(end: Parser[?]) = rep(not(end) ~> (treeInvocable | expression)) <~ end mapWithPos Tree.apply
+  def tree(end: Parser[?]): Parser[Tree] = rep(not(end) ~> (treeInvocable | expression)) <~ end mapWithPos Tree.apply
 
-  def variableAssignment: Parser[Expression] = ((identifier ~ Assignment ~ comparison) mapWithPos { case Identifier(name) ~ _ ~ expr => VariableAssignment(name, expr) }) | arrayAssignment
+  def variableAssignment: Parser[Expression] = ((identifier ~ Assignment() ~ comparison) mapWithPos { case Identifier(name) ~ _ ~ expr => VariableAssignment(name, expr) }) | arrayAssignment
 
-  def arrayAssignment: Parser[Expression] = ((invocable ~ (BracketOpen ~> comparison <~ BracketClose) ~ Assignment ~ comparison) mapWithPos { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)}) | structureAssignment
+  def arrayAssignment: Parser[Expression] = ((invocable ~ (BracketOpen() ~> comparison <~ BracketClose()) ~ Assignment() ~ comparison) mapWithPos { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)}) | structureAssignment
 
-  def structureAssignment: Parser[Expression] = ((invocable ~ (Dot ~> identifier) ~ Assignment ~ comparison) mapWithPos { case structure ~ Identifier(field) ~ _ ~ expr => StructureAssignment(structure, field, expr) }) | comparison
+  def structureAssignment: Parser[Expression] = ((invocable ~ (Dot() ~> identifier) ~ Assignment() ~ comparison) mapWithPos { case structure ~ Identifier(field) ~ _ ~ expr => StructureAssignment(structure, field, expr) }) | comparison
 
   private val compOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
@@ -158,17 +158,16 @@ object ExpressionParser extends CYParsers {
 
   def furtherCall(expr: Expression): Parser[Expression] = (arrayCall(expr) | structureCall(expr)) >> (left => furtherCall(left) | success(left))
 
-  def arrayCall(expr: Expression): Parser[Expression] = (BracketOpen ~> expression <~ BracketClose) mapWithPos (ArrayCall(expr, _))
+  def arrayCall(expr: Expression): Parser[Expression] = (BracketOpen() ~> expression <~ BracketClose()) mapWithPos (ArrayCall(expr, _))
 
-  def structureCall(expr: Expression): Parser[Expression] = (Dot ~> identifier) mapWithPos { case Identifier(name) => StructureCall(expr, name) }
+  def structureCall(expr: Expression): Parser[Expression] = (Dot() ~> identifier) mapWithPos { case Identifier(name) => StructureCall(expr, name) }
 
   def invocable: Parser[Expression] = literalSymbol | parenthesized | functionCall | variableCall
 
   def apply(tokens: List[Token]): Either[ParsingError, Expression] = program(TokenReader(tokens)) match {
     case Success(result, in) if in.atEnd => Right(result)
     case Success(_, _) => Left(ParsingError(s"Le programme doit se terminer par `FIN`"))
-    case Failure(msg, _) => Left(ParsingError(msg))
-    case Error(msg, _) => Left(ParsingError(msg))
+    case err: NoSuccess => Left(ParsingError(err.toString))
   }
 
 }
