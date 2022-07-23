@@ -1,13 +1,36 @@
 package io.github.iltotore.cylang.parse
 
-import scala.util.parsing.combinator.RegexParsers
-import Token.*
+import io.github.iltotore.cylang.parse.Token.*
 
 import scala.language.implicitConversions
 import scala.util.matching.Regex
+import scala.util.parsing.combinator.RegexParsers
 
 //noinspection TypeAnnotation
-object ExpressionLexer extends RegexParsers {
+object ExpressionLexer extends RegexParsers with FrenchParser {
+
+  /**
+   * French version of [[RegexParsers.literal]]
+   */
+  override implicit def literal(s: String): Parser[String] = new Parser[String] {
+    def apply(in: Input) = {
+      val source = in.source
+      val offset = in.offset
+      val start = handleWhiteSpace(source, offset)
+      var i = 0
+      var j = start
+      while (i < s.length && j < source.length && s.charAt(i) == source.charAt(j)) {
+        i += 1
+        j += 1
+      }
+      if (i == s.length)
+        Success(source.subSequence(start, j).toString, in.drop(j - offset))
+      else  {
+        val found = if (start == source.length()) "fin de fichier" else "'"+source.charAt(start)+"'"
+        Failure(s"'$found' trouvé à la place de '$s'", in.drop(start - offset))
+      }
+    }
+  }
 
   /** A parser that matches a regex string without handling spaces */
   def regexNoSkip(r: Regex): Parser[String] = new Parser[String] {
@@ -20,15 +43,15 @@ object ExpressionLexer extends RegexParsers {
           Success(source.subSequence(start, start + matched.end).toString,
             in.drop(start + matched.end - offset))
         case None =>
-          val found = if (start == source.length()) "end of source" else "'"+source.charAt(start)+"'"
-          Failure("string matching regex '"+r+"' expected but "+found+" found", in.drop(start - offset))
+          val found = if (start == source.length()) "fin de fichier" else "'"+source.charAt(start)+"'"
+          Failure(s"'$found' trouvé à la place de '$r'", in.drop(start - offset))
       }
     }
   }
 
   def keywordEnd = regexNoSkip((s"($$|$whiteSpace)").r)
-    .withErrorMessage("Whitespace or end of source expected")
-    .withFailureMessage("Whitespace or end of source expected")
+    .withErrorMessage("Espace ou fin de fichier attendu")
+    .withFailureMessage("Espace ou fin de fichier attendu")
 
   def symbol(word: Parser[String], token: Token): Parser[Token] = positioned(word ^^^ token)
 
@@ -104,7 +127,7 @@ object ExpressionLexer extends RegexParsers {
 
   def literalChar = positioned("'[^']'".r ^^ (x => LiteralChar(x.charAt(1))))
 
-  def literalText = positioned("\"[^\"]*\"".r ^^ (x => LiteralText(x.substring(1, x.length-1))))
+  def literalText = positioned("\"[^\"]*\"".r ^^ (x => LiteralText(x.substring(1, x.length - 1))))
 
   def operator = positioned(raw"[+\-*/!]|(DIV)|(MOD)|([<>]=?)|(!?=)".r ^^ Operator.apply)
 
@@ -119,7 +142,6 @@ object ExpressionLexer extends RegexParsers {
 
   def apply(code: String): Either[ParsingError, List[Token]] = parseAll(tokens, code) match {
     case Success(result, _) => Right(result)
-    case failure: Failure => Left(ParsingError(failure.toString))
-    case err: Error => Left(ParsingError(err.toString))
+    case NoSuccess(msg, next) => Left(ParsingError(msg, next.pos))
   }
 }

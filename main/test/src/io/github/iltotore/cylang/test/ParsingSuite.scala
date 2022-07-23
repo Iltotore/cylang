@@ -15,9 +15,9 @@ object ParsingSuite extends TestSuite {
 
   private def assertSuccess[A](parser: Parser[A], tokens: List[Token], expected: A): Unit = {
     val result = parser(TokenReader(tokens))
-    Predef.assert(result.successful, "Result is not successful")
+    Predef.assert(result.successful, s"Result is not successful: $result")
     Predef.assert(result.next.atEnd, s"Remaining input: ${result.next}")
-    Predef.assert(result.get.equals(expected))
+    assert(result.get == expected)
   }
 
   private def assertFailure[A](parser: Parser[A], tokens: List[Token]): Unit = assertMatch(parser(TokenReader(tokens))) {

@@ -10,7 +10,7 @@ import scala.util.parsing.combinator.*
 import scala.util.parsing.input.Position
 
 
-object ExpressionParser extends CYParsers {
+object ExpressionParser extends CYParsers with FrenchParser {
 
   override type Elem = Token
 
@@ -64,7 +64,7 @@ object ExpressionParser extends CYParsers {
 
   def param: Parser[Parameter] = identifier ~ Colon() ~! cyType ^^ { case Identifier(name) ~ _ ~ tpe => Parameter(name, tpe) }
 
-  def body: Parser[Body] = (Variable() ~>! rep(not(Begin()) ~>! param)).? ~! Begin() ~! tree(End()) ^^ {
+  def body: Parser[Body] = (Variable() ~>! rep(not(Begin()) ~> param)).? ~! Begin() ~! tree(End()) ^^ {
     case Some(variables) ~ _ ~ expr => Body(variables, expr)
     case None ~ _ ~ expr => Body(List.empty, expr)
   }
@@ -104,13 +104,15 @@ object ExpressionParser extends CYParsers {
     case cond ~ _ ~ (expr ~ elseExpr) => IfCondition(cond, expr, elseExpr)
   }
 
-  def ifBody: Parser[~[Expression, Expression]] = (tree(Else()) ~ (ifElse | tree(End() ~ If()))) | (tree(End() ~ If()) ~ empty)
+  def ifBody: Parser[~[Expression, Expression]] = (tree(Else(), hard=false) ~ (ifElse | tree(End() ~ If(), hard=false))) | (tree(End() ~ If()) ~ empty)
 
   def treeReturn: Parser[Expression] = Return() ~> (expression | empty) mapWithPos ReturnExpr.apply
 
   def treeInvocable: Parser[Expression] = forLoop | whileLoop | doWhileLoop | ifElse | treeReturn
 
-  def tree(end: Parser[?]): Parser[Tree] = rep(not(end) ~> (treeInvocable | expression)) <~ end mapWithPos Tree.apply
+  def tree(end: Parser[?], hard: Boolean = true): Parser[Tree] =
+    if(hard) rep(not(end) ~> (treeInvocable | expression)) <~! end mapWithPos Tree.apply
+    else rep(not(end) ~> (treeInvocable | expression)) <~ end mapWithPos Tree.apply
 
   def variableAssignment: Parser[Expression] = ((identifier ~ Assignment() ~ comparison) mapWithPos { case Identifier(name) ~ _ ~ expr => VariableAssignment(name, expr) }) | arrayAssignment
 
@@ -167,7 +169,6 @@ object ExpressionParser extends CYParsers {
   def apply(tokens: List[Token]): Either[ParsingError, Expression] = program(TokenReader(tokens)) match {
     case Success(result, in) if in.atEnd => Right(result)
     case Success(_, _) => Left(ParsingError(s"Le programme doit se terminer par `FIN`"))
-    case err: NoSuccess => Left(ParsingError(err.toString))
+    case NoSuccess(msg, next) => Left(ParsingError(msg, next.pos))
   }
-
 }
