@@ -23,9 +23,9 @@ case class Scope(
   
   def withAssignment(name: String, value: Value)(using Context): Either[EvaluationError, Scope] = variables.get(name) match {
 
-    case Some(variable) => Either.cond(variable.mutable, this.withVariable(name, variable.copy(value = value)), EvaluationError(s"This variable is immutable"))
+    case Some(variable) => Either.cond(variable.mutable, this.withVariable(name, variable.copy(value = value)), EvaluationError(s"Impossible de modifier une constante"))
 
-    case None => Left(EvaluationError(s"Unknown variable $name"))
+    case None => Left(EvaluationError(s"La variable '$name' n'existe pas"))
   }
 }
 
