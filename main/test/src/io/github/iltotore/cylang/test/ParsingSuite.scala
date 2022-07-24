@@ -1,98 +1,111 @@
 package io.github.iltotore.cylang.test
 
-import scala.util.parsing.input.Position
-import io.github.iltotore.cylang.{CYType, FixedPosition, Parameter}
 import utest.*
-import io.github.iltotore.cylang.ast.{Body, Value}
+
+import scala.util.parsing.input.{Position, NoPosition}
+import io.github.iltotore.cylang.{CYType, FixedPosition, Parameter}
+import io.github.iltotore.cylang.ast.{Body, Expression, Value}
 import io.github.iltotore.cylang.ast.Expression.*
+import io.github.iltotore.cylang.parse.Token
+import io.github.iltotore.cylang.parse.Token.*
+import io.github.iltotore.cylang.parse.TokenReader
 import io.github.iltotore.cylang.parse.ExpressionParser.*
 
 object ParsingSuite extends TestSuite {
 
+  private def assertSuccess[A](parser: Parser[A], tokens: List[Token], expected: A): Unit = {
+    val result = parser(TokenReader(tokens))
+    Predef.assert(result.successful, s"Result is not successful: $result")
+    Predef.assert(result.next.atEnd, s"Remaining input: ${result.next}")
+    assert(result.get == expected)
+  }
+
+  private def assertFailure[A](parser: Parser[A], tokens: List[Token]): Unit = assertMatch(parser(TokenReader(tokens))) {
+    case Success(_, in) if !in.atEnd =>
+    case NoSuccess(_, _) =>
+  }
+
+  private def assertLiteral(parser: Parser[Expression], token: Token, expected: Value)(using Position): Unit = assertSuccess(parser, List(token), Literal(expected))
+
   val tests: Tests = Tests {
 
-    given Position = FixedPosition(0, 0, "")
+    given Position = NoPosition
 
     test("literal") {
-
-      test("integer") {
-
-        test("positive") - assertMatch(parseAll(integer, "55")) { case Success(Literal(Value.Integer(55)), _) => }
-        test("invalid") - assertMatch(parseAll(integer, "a")) { case Failure(_, _) => }
-      }
-
-      test("real") {
-
-        test("positive") - assertMatch(parseAll(real, "55.0")) { case Success(Literal(Value.Real(55)), _) => }
-        test("invalid") - assertMatch(parseAll(real, "a")) { case Failure(_, _) => }
-      }
-
-      test("character") {
-
-        test("valid") - assertMatch(parseAll(character, "'a'")) { case Success(Literal(Value.Character('a')), _) => }
-        test("unclosed") {
-          test - assertMatch(parseAll(character, "a'")) { case Failure(_, _) => }
-          test - assertMatch(parseAll(character, "'a")) { case Failure(_, _) => }
-        }
-        test("tooLong") - assertMatch(parseAll(character, "'abc'")) { case Failure(_, _) => }
-        test("empty") - assertMatch(parseAll(character, "''")) { case Failure(_, _) => }
-      }
-
-      test("text") {
-        test("valid") {
-          test - assertMatch(parseAll(text, "\"a\"")) { case Success(Literal(Value.Text("a")), _) => }
-          test - assertMatch(parseAll(text, "\"\"")) { case Success(Literal(Value.Text("")), _) => }
-        }
-        test("unclosed") {
-          test - assertMatch(parseAll(text, "a\"")) { case Failure(_, _) => }
-          test - assertMatch(parseAll(text, "\"a")) { case Failure(_, _) => }
-        }
-      }
-
-      test("bool") {
-        test("true") - assertMatch(parseAll(bool, "true")) { case Success(Literal(Value.Bool(true)), _) => }
-        test("false") - assertMatch(parseAll(bool, "false")) { case Success(Literal(Value.Bool(false)), _) => }
-        test("invalid") - assertMatch(parseAll(bool, "tru")) { case Failure(_, _) => }
-      }
+      test("bool") - assertLiteral(bool, LiteralBool(true), Value.Bool(true))
+      test("int") - assertLiteral(integer, LiteralInt(14), Value.Integer(14))
+      test("real") - assertLiteral(real, LiteralReal(14.0), Value.Real(14.0))
+      test("char") - assertLiteral(character, LiteralChar('a'), Value.Character('a'))
+      test("text") - assertLiteral(text, LiteralText("abc"), Value.Text("abc"))
     }
 
     test("operator") {
 
+      test("unary") {
+        test("+") - assertSuccess(unary, List(Operator("+"), LiteralInt(14)), Literal(Value.Integer(14)))
+        test("-") - assertSuccess(unary, List(Operator("-"), LiteralInt(14)), Negation(Literal(Value.Integer(14))))
+        test("!") - assertSuccess(unary, List(Operator("!"), LiteralBool(true)), Not(Literal(Value.Bool(true))))
+      }
+
       test("binary") {
 
+        test("eq") {
+          test("valid") - assertSuccess(comparison, List(LiteralInt(1), Operator("="), LiteralInt(2)), Equality(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator("=")))
+        }
+
+        test("lt") {
+          test("valid") - assertSuccess(comparison, List(LiteralInt(1), Operator("<"), LiteralInt(2)), Less(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator("<")))
+        }
+
+        test("gt") {
+          test("valid") - assertSuccess(comparison, List(LiteralInt(1), Operator(">"), LiteralInt(2)), Greater(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator(">")))
+        }
+
+        test("lteq") {
+          test("valid") - assertSuccess(comparison, List(LiteralInt(1), Operator("<="), LiteralInt(2)), LessEqual(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator("<=")))
+        }
+
+        test("gteq") {
+          test("valid") - assertSuccess(comparison, List(LiteralInt(1), Operator(">="), LiteralInt(2)), GreaterEqual(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator(">=")))
+        }
+
         test("add") {
-          test("valid") - assertMatch(parseAll(arith, "1 + 1")) { case Success(Addition(_, _), _) => }
-          test("unclosed") - assertMatch(parseAll(arith, "1 +")) { case Failure(_, _) => }
+          test("valid") - assertSuccess(arith, List(LiteralInt(1), Operator("+"), LiteralInt(2)), Addition(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(arith, List(LiteralInt(1), Operator("+")))
         }
 
         test("sub") {
-          test("valid") - assertMatch(parseAll(arith, "1 - 1")) { case Success(Subtraction(_, _), _) => }
-          test("unclosed") - assertMatch(parseAll(arith, "1 -")) { case Failure(_, _) => }
+          test("valid") - assertSuccess(arith, List(LiteralInt(1), Operator("-"), LiteralInt(2)), Subtraction(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(arith, List(LiteralInt(1), Operator("-")))
         }
 
         test("mul") {
-          test("valid") - assertMatch(parseAll(term, "1 * 1")) { case Success(Multiplication(_, _), _) => }
-          test("unclosed") - assertMatch(parseAll(term, "1 *")) { case Failure(_, _) => }
+          test("valid") - assertSuccess(term, List(LiteralInt(1), Operator("*"), LiteralInt(2)), Multiplication(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(term, List(LiteralInt(1), Operator("*")))
         }
 
         test("div") {
-          test("valid") - assertMatch(parseAll(term, "1 / 1")) { case Success(Division(_, _), _) => }
-          test("unclosed") - assertMatch(parseAll(term, "1 /")) { case Failure(_, _) => }
+          test("valid") - assertSuccess(term, List(LiteralInt(1), Operator("/"), LiteralInt(2)), Division(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(term, List(LiteralInt(1), Operator("/")))
         }
 
         test("wholeDiv") {
-          test("valid") - assertMatch(parseAll(term, "1 DIV 1")) { case Success(WholeDivision(_, _), _) => }
-          test("unclosed") - assertMatch(parseAll(term, "1 DIV")) { case Failure(_, _) => }
+          test("valid") - assertSuccess(term, List(LiteralInt(1), Operator("DIV"), LiteralInt(2)), WholeDivision(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(term, List(LiteralInt(1), Operator("DIV")))
         }
 
-        test("modulo") {
-          test("valid") - assertMatch(parseAll(term, "1 % 1")) { case Success(Modulo(_, _), _) => }
-          test("unclosed") - assertMatch(parseAll(term, "1 /")) { case Failure(_, _) => }
+        test("mod") {
+          test("valid") - assertSuccess(term, List(LiteralInt(1), Operator("MOD"), LiteralInt(2)), Modulo(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
+          test("missing") - assertFailure(term, List(LiteralInt(1), Operator("MOD")))
         }
 
         test("priority") {
-
-          test("parantheseless") {
+          test("parenthesisLess") {
 
             val expected = Equality(
               Literal(Value.Integer(11)),
@@ -105,10 +118,10 @@ object ParsingSuite extends TestSuite {
               )
             )
 
-            assertMatch(parseAll(equality, "11 = 5 + 2 * 3")) { case Success(parsed, _) if parsed equals expected => }
+            assertSuccess(expression, List(LiteralInt(11), Operator("="), LiteralInt(5), Operator("+"), LiteralInt(2), Operator("*"), LiteralInt(3)), expected)
           }
 
-          test("paranthesized") {
+          test("withParentheses") {
 
             val expected = Equality(
               Literal(Value.Integer(21)),
@@ -121,243 +134,187 @@ object ParsingSuite extends TestSuite {
               )
             )
 
-            assertMatch(parseAll(equality, "21 = (5 + 2) * 3")) { case Success(parsed, _) if parsed equals expected => }
+            assertSuccess(expression, List(LiteralInt(21), Operator("="), ParenthesisOpen(), LiteralInt(5), Operator("+"), LiteralInt(2), ParenthesisClose(), Operator("*"), LiteralInt(3)), expected)
           }
         }
-      }
 
-      test("unary") {
-
-        test("plus") - assertMatch(parseAll(unary, "+5")) { case Success(Literal(Value.Integer(5))) => }
-
-        test("minus") - assertMatch(parseAll(unary, "-5")) { case Success(Negation(Literal(Value.Integer(5)))) => }
-
-        test("not") - assertMatch(parseAll(unary, "!true")) { case Success(Not(Literal(Value.Bool(true)))) => }
       }
     }
 
     test("tree") {
-      assertMatch(parseAll(
-        tree("FIN TEST"),
-        """1 + 1
-          |5 * 2
-          |FIN TEST""".stripMargin
-      )) { case Success(Tree(List(_, _))) => }
+
+      val expected = Tree(List(
+        Addition(
+          Literal(Value.Integer(1)),
+          Literal(Value.Integer(1))
+        )
+      ))
+
+      assertSuccess(tree(End()), List(LiteralInt(1), Operator("+"), LiteralInt(1), End()), expected)
     }
 
     test("forLoop") {
-      test("simple") - assertMatch(parseAll(
-        forLoop,
-        """POUR i DE 0 A 5 FAIRE
-          |ecrire(i)
-          |FIN POUR""".stripMargin
-      )) { case Success(ForLoop("i", Literal(_), Literal(_), Literal(Value.Integer(1)), Tree(List(_)))) => }
 
-      test("withStep") - assertMatch(parseAll(
-        forLoop,
-        """POUR i DE 0 A 5 PAS DE 2 FAIRE
-          |ecrire(i)
-          |FIN POUR""".stripMargin
-      )) { case Success(ForLoop("i", Literal(_), Literal(_), Literal(Value.Integer(2)), Tree(List(_)))) => }
+      test("basic") {
+
+        val expected = ForLoop(
+          "i",
+          Literal(Value.Integer(0)),
+          Literal(Value.Integer(10)),
+          Literal(Value.Integer(1)),
+          Tree(List.empty)
+        )
+
+        assertSuccess(forLoop, List(For(), Identifier("i"), From(), LiteralInt(0), To(), LiteralInt(10), Do(), End(), For()), expected)
+      }
+
+      test("withStep") {
+
+        val expected = ForLoop(
+          "i",
+          Literal(Value.Integer(0)),
+          Literal(Value.Integer(10)),
+          Literal(Value.Integer(2)),
+          Tree(List.empty)
+        )
+
+        assertSuccess(forLoop, List(For(), Identifier("i"), From(), LiteralInt(0), To(), LiteralInt(10), Step(), LiteralInt(2), Do(), End(), For()), expected)
+      }
     }
 
     test("whileLoop") {
-      assertMatch(parseAll(
-        whileLoop,
-        """TANT QUE true FAIRE
-          |ECRIRE(1)
-          |FIN TANT QUE""".stripMargin
-      )) { case Success(WhileLoop(Literal(_), Tree(List(_)))) => }
+
+      val expected = WhileLoop(
+        Literal(Value.Bool(true)),
+        Tree(List.empty)
+      )
+
+      assertSuccess(whileLoop, List(While(), LiteralBool(true), Do(), End(), While()), expected)
     }
 
     test("doWhileLoop") {
-      assertMatch(parseAll(
-        doWhileLoop,
-        """FAIRE
-          |ECRIRE(1)
-          |TANT QUE true""".stripMargin
-      )) { case Success(DoWhileLoop(Literal(_), Tree(List(_)))) => }
+
+      val expected = DoWhileLoop(
+        Literal(Value.Bool(true)),
+        Tree(List.empty)
+      )
+
+      assertSuccess(doWhileLoop, List(Do(), While(), LiteralBool(true)), expected)
     }
 
     test("if") {
-      test("simple") - assertMatch(parseAll(
-        ifElse,
-        """SI true ALORS
-          |ecrire(1)
-          |FIN SI""".stripMargin
-      )) { case Success(If(Literal(_), Tree(List(_)), Empty())) => }
 
-      test("withElse") - assertMatch(parseAll(
-        ifElse,
-        """SI true ALORS
-          |ecrire(1)
-          |SINON
-          |ecrire(2)
-          |FIN SI""".stripMargin
-      )) { case Success(If(Literal(_), Tree(List(_)), Tree(List(_)))) => }
+      test("basic") {
 
-      test("withElseIf") - assertMatch(parseAll(
-        ifElse,
-        """SI true ALORS
-          |ecrire(1)
-          |SINON SI true ALORS
-          |ecrire(2)
-          |SINON
-          |ecrire(3)
-          |FIN SI""".stripMargin
-      )) { case Success(If(Literal(_), Tree(List(_)), If(Literal(_), Tree(List(_)), Tree(List(_))))) => }
+        val expected = IfCondition(
+          Literal(Value.Bool(true)),
+          Tree(List.empty),
+          Empty()
+        )
+
+        assertSuccess(ifElse, List(If(), LiteralBool(true), Then(), End(), If()), expected)
+      }
+
+      test("withElse") {
+
+        val expected = IfCondition(
+          Literal(Value.Bool(true)),
+          Tree(List.empty),
+          Tree(List.empty)
+        )
+
+        assertSuccess(ifElse, List(If(), LiteralBool(true), Then(), Else(), End(), If()), expected)
+      }
+
+      test("withElseIf") {
+
+        val expected = IfCondition(
+          Literal(Value.Bool(true)),
+          Tree(List.empty),
+          IfCondition(
+            Literal(Value.Bool(true)),
+            Tree(List.empty),
+            Tree(List.empty)
+          )
+        )
+
+        assertSuccess(ifElse, List(If(), LiteralBool(true), Then(), Else(), If(), LiteralBool(true), Then(), Else(), End(), If()), expected)
+      }
     }
 
-    test("return") - assertMatch(parseAll(treeReturn, "RETOURNER 5")) { case Success(Return(Literal(Value.Integer(5)))) => }
+    test("return") {
+      test("void") - assertSuccess(treeReturn, List(Return()), ReturnExpr(Empty()))
+      test("value") - assertSuccess(treeReturn, List(Return(), LiteralInt(1)), ReturnExpr(Literal(Value.Integer(1))))
+    }
+
+    test("variableCall") - assertSuccess(variableCall, List(Identifier("var")), VariableCall("var"))
 
     test("functionCall") {
-      test("empty") - assertMatch(parseAll(expression, "foo()")) { case Success(FunctionCall("foo", List())) => }
-      test("withArgs") - assertMatch(parseAll(expression, "max(1, 2)")) { case Success(FunctionCall("max", List(_, _))) => }
+      test("empty") - assertSuccess(functionCall, List(Identifier("test"), ParenthesisOpen(), ParenthesisClose()), FunctionCall("test", List.empty))
+      test("withArgs") - assertSuccess(functionCall, List(Identifier("test"), ParenthesisOpen(), LiteralInt(1), ParenthesisClose()), FunctionCall("test", List(Literal(Value.Integer(1)))))
     }
 
-    test("arrayCall") - assertMatch(parseAll(unary, "foo[5]")) { case Success(ArrayCall(_, Literal(Value.Integer(5)))) =>}
+    test("arrayCall") - assertSuccess(unary, List(Identifier("arr"), BracketOpen(), LiteralInt(1), BracketClose()), ArrayCall(VariableCall("arr"), Literal(Value.Integer(1))))
 
-    test("structureCall") - assertMatch(parseAll(unary, "foo.x")){ case Success(StructureCall(VariableCall("foo"), "x")) => }
+    test("structureCall") - assertSuccess(unary, List(Identifier("struct"), Dot(), Identifier("x")), StructureCall(VariableCall("struct"), "x"))
 
-    test("arrayAssignment") - assertMatch(parseAll(arrayAssignment, "foo[5] <- 2")) { case Success(ArrayAssignment(_, Literal(Value.Integer(5)), Literal(Value.Integer(2)))) =>}
+    test("variableAssignment") - assertSuccess(variableAssignment, List(Identifier("var"), Assignment(), LiteralInt(1)), VariableAssignment("var", Literal(Value.Integer(1))))
 
-    test("structureAssignment") - assertMatch(parseAll(expression, "foo.x <- 5")) {
-      case Success(StructureAssignment(VariableCall("foo"), "x", Literal(Value.Integer(5)))) =>
-    }
+    test("arrayAssignment") - assertSuccess(arrayAssignment, List(Identifier("arr"), BracketOpen(), LiteralInt(1), BracketClose(), Assignment(), LiteralInt(3)), ArrayAssignment(VariableCall("arr"), Literal(Value.Integer(1)), Literal(Value.Integer(3))))
 
-    test("cyType") {
-      test("raw") - assertMatch(parseAll(rawType, "entier")) { case Success(CYType.Integer) => }
+    test("structureAssignment") - assertSuccess(structureAssignment, List(Identifier("struct"), Dot(), Identifier("x"), Assignment(), LiteralInt(1)), StructureAssignment(VariableCall("struct"), "x", Literal(Value.Integer(1))))
+
+    test("type") {
+      test("basic") - assertSuccess(cyType, List(Identifier("entier")), CYType.Integer)
       test("array") {
-        test("unknownSize") - assertMatch(parseAll(arrayType, "tableau de type entier")) { case Success(CYType.Array(CYType.Integer, None)) => }
-        test("knownSize") - assertMatch(parseAll(arrayType, "tableau de type entier de taille 5")) { case Success(CYType.Array(CYType.Integer, Some(5))) => }
+        test("unknownSize") - assertSuccess(cyType, List(ArrayOf(), Identifier("entier")), CYType.Array(CYType.Integer, None))
+        test("knownSize") {
+          test - assertSuccess(cyType, List(ArrayOf(), Identifier("entier"), ArraySize(), LiteralInt(10)), CYType.Array(CYType.Integer, Some(10)))
+          test - assertFailure(cyType, List(ArrayOf(), Identifier("entier"), ArraySize(), LiteralReal(10.0)))
+        }
       }
-      test("structure") - assertMatch(parseAll(cyType, "foo")) { case Success(CYType.StructureInstance("foo")) => }
+      test("structure") - assertSuccess(cyType, List(Identifier("Point")), CYType.StructureInstance("Point"))
     }
 
-    test("param") - assertMatch(parseAll(param, "x: entier")) { case Success(Parameter("x", CYType.Integer)) => }
+    test("constantDeclaration") - assertSuccess(constantDeclaration, List(Constant(), Identifier("x"), Assignment(), LiteralInt(1)), ConstantDeclaration("x", Literal(Value.Integer(1))))
 
-    test("body") {
-      test("simple") - assertMatch(parseAll(
-        body,
-        """DEBUT
-          |ecrire(1)
-          |FIN""".stripMargin
-      )) { case Success(Body(List(), _)) =>}
+    test("enumerationDeclaration") - assertSuccess(enumerationDeclaration, List(Enumeration(), Identifier("Couleur"), Identifier("BLEU"), End(), Enumeration()), EnumerationDeclaration("Couleur", List("BLEU")))
 
-      test("withVariables") - assertMatch(parseAll(
-        body,
-        """VARIABLE
-          |x: entier
-          |y: caractere
-          |DEBUT
-          |POUR i DE 0 A x FAIRE
-          |ecrire(x + i)
-          |FIN POUR
-          |FIN""".stripMargin
-      )) { case Success(Body(List(_, _), _)) =>}
-    }
-    
-    test("constantDeclaration") - assertMatch(parseAll(constantDeclaration, "CONSTANTE TEST <- 10")) { case Success(ConstantDeclaration("TEST", Literal(Value.Integer(10)))) => }
+    test("structureDeclaration") {
 
-    test("enumerationDeclaration") - assertMatch(parseAll(
-      enumerationDeclaration,
-      """ENUMERATION Couleur
-        |  BLEU, ROUGE, VERT
-        |FIN ENUMERATION
-        |""".stripMargin
-    )) { case Success(EnumerationDeclaration("Couleur", List("BLEU", "ROUGE", "VERT"))) => }
-
-    test("structureDeclaration") - assertMatch(parseAll(
-      structureDeclaration,
-      """STRUCTURE Point
-        |x: entier
-        |y: entier
-        |FIN STRUCTURE""".stripMargin
-    )) { case Success(StructureDeclaration("Point", List(Parameter("x", CYType.Integer), Parameter("y", CYType.Integer)))) => }
-
-    test("functionDeclaration") - assertMatch(parseAll(
-      functionDeclaration,
-      """FONCTION facto(x: entier): entier
-        |VARIABLE
-        |res: entier
-        |DEBUT
-        |res <- 1
-        |POUR i DE 0 A x FAIRE
-        |res = res + i
-        |FIN POUR
-        |RETOURNER res
-        |FIN""".stripMargin
-    )) { case Success(FunctionDeclaration("facto", CYType.Integer, _, _)) => }
-
-    test("procedureDeclaration") - assertMatch(parseAll(
-      procedureDeclaration,
-      """PROCEDURE foo(x: texte)
-        |DEBUT
-        |  ECRIRE(x)
-        |FIN""".stripMargin
-    )) { case Success(FunctionDeclaration("foo", CYType.Void, _, _)) => }
-
-    test("program") {
-
-      val expected = ProgramDeclaration(
-        name = "test",
-        declarations = List(
-          FunctionDeclaration(
-            name = "facto",
-            tpe = CYType.Integer,
-            parameters = List(Parameter("x", CYType.Integer)),
-            body = Body(
-              variables = List(Parameter("res", CYType.Integer)),
-              expression = Tree(List(
-                VariableAssignment(
-                  name = "res",
-                  expression = Literal(Value.Integer(1))
-                ),
-                ForLoop(
-                  name = "i",
-                  from = Literal(Value.Integer(1)),
-                  to = Addition(VariableCall("x"), Literal(Value.Integer(1))),
-                  step = Literal(Value.Integer(1)),
-                  expression = Tree(List(
-                    VariableAssignment(
-                      name = "res",
-                      expression = Multiplication(VariableCall("res"), VariableCall("i"))
-                    )
-                  ))
-                ),
-                Return(VariableCall("res"))
-              ))
-            )
-          )
-        ),
-        body = Body(
-          variables = List.empty,
-          expression = Tree(List(
-            FunctionCall("ecrire", List(
-              FunctionCall("facto", List(Literal(Value.Integer(5)))))
-            )
-          ))
+      val expected = StructureDeclaration(
+        "Point",
+        List(
+          Parameter("x", CYType.Real),
+          Parameter("y", CYType.Real)
         )
       )
 
-      assertMatch(parseAll(
-        program,
-        """PROGRAMME test
-          |FONCTION facto(x: entier): entier
-          |VARIABLE
-          |res: entier
-          |DEBUT
-          |res <- 1
-          |POUR i DE 1 A x + 1 FAIRE
-          |res <- res * i
-          |FIN POUR
-          |RETOURNER res
-          |FIN
-          |
-          |DEBUT
-          |ecrire(facto(5))
-          |FIN""".stripMargin
-      )) { case Success(result) if result equals expected => }
+      assertSuccess(structureDeclaration, List(Structure(), Identifier("Point"), Identifier("x"), Colon(), Identifier("reel"), Identifier("y"), Colon(), Identifier("reel"), End(), Structure()), expected)
+    }
+
+    test("functionDeclaration") {
+
+      val expected = FunctionDeclaration(
+        "test",
+        CYType.Boolean,
+        List(Parameter("x", CYType.Integer)),
+        Body(List.empty, Tree(List(ReturnExpr(Literal(Value.Bool(true))))))
+      )
+
+      assertSuccess(functionDeclaration, List(Function(), Identifier("test"), ParenthesisOpen(), Identifier("x"), Colon(), Identifier("entier"), ParenthesisClose(), Colon(), Identifier("booleen"), Begin(), Return(), LiteralBool(true), End()), expected)
+    }
+
+    test("procedureDeclaration") {
+
+      val expected = FunctionDeclaration(
+        "test",
+        CYType.Void,
+        List(Parameter("x", CYType.Integer)),
+        Body(List.empty, Tree(List.empty))
+      )
+
+      assertSuccess(procedureDeclaration, List(Procedure(), Identifier("test"), ParenthesisOpen(), Identifier("x"), Colon(), Identifier("entier"), ParenthesisClose(), Begin(), End()), expected)
     }
   }
 }
