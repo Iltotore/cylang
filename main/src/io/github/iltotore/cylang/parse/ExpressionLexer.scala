@@ -53,9 +53,9 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
     .withErrorMessage("Espace ou fin de fichier attendu")
     .withFailureMessage("Espace ou fin de fichier attendu")
 
-  def symbol(word: Parser[String], token: Token): Parser[Token] = positioned(word ^^^ token)
+  def symbol(word: Parser[String], token: => Token): Parser[Token] = positioned(word ^^^ token)
 
-  def keyword(word: Parser[String], token: Token): Parser[Token] = positioned(word ~>! keywordEnd ^^^ token)
+  def keyword(word: Parser[String], token: => Token): Parser[Token] = positioned(word ~>! keywordEnd ^^^ token)
 
   def comma = symbol(",", Comma())
 

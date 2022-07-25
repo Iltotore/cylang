@@ -1,9 +1,10 @@
 package io.github.iltotore.cylang.parse
 
-import scala.util.parsing.input.{Position, Positional, NoPosition}
+import scala.util.Random
+import scala.util.parsing.input.{NoPosition, Position, Positional}
 
-sealed trait Token(name: String = toString) extends Positional {
-
+sealed trait Token(name: String) extends Positional {
+  
   override def toString: String = name
 }
 
