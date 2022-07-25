@@ -84,8 +84,8 @@ object CYType {
 
     override def defaultValue(using context: Context): Either[EvaluationError, Value] =
       for {
-        enumeration <- context.scope.enumerations.get(enumName).toRight(EvaluationError(s"Unknown enumeration: $enumName"))
-        field <- enumeration.fields.headOption.toRight(EvaluationError(s"Enumeration $enumName cannot be empty"))
+        enumeration <- context.scope.enumerations.get(enumName).toRight(EvaluationError(s"L'énumération '$enumName' n'existe pas"))
+        field <- enumeration.fields.headOption.toRight(EvaluationError(s"L'énumération '$enumName' n'a pas de constante"))
       } yield Value.EnumerationField(enumName, field)
   }
 
@@ -94,7 +94,7 @@ object CYType {
     override def name: String = s"STRUCTURE $structName"
 
     override def defaultValue(using context: Context): Either[EvaluationError, Value] = either {
-      val structure = ensureOption(context.scope.structures.get(structName))(EvaluationError(s"Unknown structure $structName"))
+      val structure = ensureOption(context.scope.structures.get(structName))(EvaluationError(s"La structure '$structName' n'existe pas"))
       val values = for(field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), true))
       Value.StructureInstance(structName, mutable.Map.from(values))
     }
