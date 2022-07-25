@@ -115,7 +115,7 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
 
   def returnToken = keyword("RETOURNER", Return())
 
-  def arrayOf = keyword("tableau" ~>! "de", ArrayOf())
+  def arrayOf = keyword("tableau" ~>! "de" ~>! "type", ArrayOf())
 
   def arraySize = keyword("de" ~>! "taille", ArraySize())
 

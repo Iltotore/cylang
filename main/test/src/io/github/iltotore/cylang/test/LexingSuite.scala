@@ -44,7 +44,7 @@ object LexingSuite extends TestSuite {
       test("while") - assertSingle("TANT QUE", While())
       test("do") - assertSingle("FAIRE", Do())
       test("return") - assertSingle("RETOURNER", Return())
-      test("arrayOf") - assertSingle("tableau de", ArrayOf())
+      test("arrayOf") - assertSingle("tableau de type", ArrayOf())
       test("arraySize") - assertSingle("de taille", ArraySize())
     }
 
