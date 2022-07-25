@@ -8,6 +8,8 @@ sealed trait Value {
   def tpe: CYType
 
   def value: Any
+  
+  def valueToString: String = value.toString
 
   override def toString: String = s"($value: $tpe)"
 }
@@ -63,12 +65,15 @@ object Value {
 
     override def tpe: CYType = CYType.Array(value.headOption.fold(CYType.Void)(_.tpe), Some(value.length))
 
-    override def toString: String = s"(${value.mkString("[", ", ", "]")}: $tpe)"
+    override def valueToString: String = value.map(_.valueToString).mkString("[", ", ", "]")
+    
   }
 
   case class EnumerationField(name: String, value: String) extends Value {
 
     override def tpe: CYType = CYType.EnumerationField(name)
+
+    override def valueToString: String = s"$name#$value"
 
   }
 
@@ -76,7 +81,11 @@ object Value {
 
     override def tpe: CYType = CYType.StructureInstance(name)
 
-    override def toString: String = s"(instance de $tpe)"
+    override def valueToString: String =
+      value
+        .map((a, b) => s"$a -> ${b.value.valueToString}")
+        .mkString(s"$name(", ", ", ")")
+    
   }
 
   case object Void extends Value {

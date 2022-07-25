@@ -40,7 +40,7 @@ object Scope {
         parameters = List(Parameter("x", CYType.Any)),
         variables = Map.empty,
         function = ctx => {
-          ctx.out.println(ctx.scope.variables("x").value.value)
+          ctx.out.println(ctx.scope.variables("x").value.valueToString)
           Right((ctx, Value.Void))
         }
       ),
