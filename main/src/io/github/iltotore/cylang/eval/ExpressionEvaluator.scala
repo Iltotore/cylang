@@ -13,7 +13,9 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
     case noCursor: (Tree | ProgramDeclaration) => evaluateNode(noCursor)
 
-    case node => evaluateNode(node)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, node.position)))
+    case node =>
+      if(context.stack.headOption.forall(!_.function.equals(context.currentFunction))) evaluateNode(node)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, node.position)))
+      else evaluateNode(node)(using context.copy(stack = context.stack.tail prepended Cursor(context.currentFunction, node.position)))
   }
 
   def evaluateNode(input: Expression)(using context: Context): EvalResult = input match {
