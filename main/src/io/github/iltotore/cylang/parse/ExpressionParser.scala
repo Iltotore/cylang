@@ -122,6 +122,7 @@ object ExpressionParser extends CYParsers with FrenchParser {
 
   private val compOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
+    "!=" -> ((a, b) => Not(Equality(a, b))),
     ">" -> Greater.apply,
     ">=" -> GreaterEqual.apply,
     "<" -> Less.apply,

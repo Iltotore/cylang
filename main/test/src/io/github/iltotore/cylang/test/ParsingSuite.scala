@@ -54,6 +54,11 @@ object ParsingSuite extends TestSuite {
           test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator("=")))
         }
 
+        test("neq") {
+          test("valid") - assertSuccess(comparison, List(LiteralInt(1), Operator("!="), LiteralInt(2)), Not(Equality(Literal(Value.Integer(1)), Literal(Value.Integer(2)))))
+          test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator("!=")))
+        }
+
         test("lt") {
           test("valid") - assertSuccess(comparison, List(LiteralInt(1), Operator("<"), LiteralInt(2)), Less(Literal(Value.Integer(1)), Literal(Value.Integer(2))))
           test("missing") - assertFailure(comparison, List(LiteralInt(1), Operator("<")))

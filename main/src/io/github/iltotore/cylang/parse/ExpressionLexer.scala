@@ -129,7 +129,7 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
 
   def literalText = positioned("\"[^\"]*\"".r ^^ (x => LiteralText(x.substring(1, x.length - 1))))
 
-  def operator = positioned(raw"[+\-*/!]|(DIV)|(MOD)|([<>]=?)|(!?=)".r ^^ Operator.apply)
+  def operator = positioned(raw"([<>]=?)|(!?=)|[+\-*/!]|(DIV)|(MOD)".r ^^ Operator.apply)
 
   def identifier = positioned(raw"\w+".r ^^ Identifier.apply)
 
