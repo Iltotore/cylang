@@ -74,7 +74,7 @@ object CYType {
 
       case Array(innerType, None) => this.innerType.isSubTypeOf(innerType)
 
-      case _ => false
+      case _ => super.isSubTypeOf(other)
     }
   }
 
