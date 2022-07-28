@@ -32,8 +32,6 @@ object Token { //Note: We cannot use Dotty's enum here because we want all our c
   case class If() extends Token("SI")
   case class Then() extends Token("ALORS")
   case class Else() extends Token("SINON")
-  case class And() extends Token("ET")
-  case class Or() extends Token("OU")
   case class For() extends Token("POUR")
   case class From() extends Token("DE")
   case class To() extends Token("A")

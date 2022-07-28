@@ -35,8 +35,6 @@ object LexingSuite extends TestSuite {
       test("if") - assertSingle("SI", If())
       test("then") - assertSingle("ALORS", Then())
       test("else") - assertSingle("SINON", Else())
-      test("and") - assertSingle("ET", And())
-      test("or") - assertSingle("OU", Or())
       test("for") - assertSingle("POUR", For())
       test("from") - assertSingle("DE", From())
       test("to") - assertSingle("A", To())
@@ -69,6 +67,8 @@ object LexingSuite extends TestSuite {
         test("!") - assertSingle("!", Operator("!"))
         test("DIV") - assertSingle("DIV", Operator("DIV"))
         test("MOD") - assertSingle("MOD", Operator("MOD"))
+        test("OU") - assertSingle("OU", Operator("OU"))
+        test("ET") - assertSingle("ET", Operator("ET"))
       }
     }
   }

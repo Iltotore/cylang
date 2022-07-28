@@ -114,12 +114,17 @@ object ExpressionParser extends CYParsers with FrenchParser {
     if(hard) rep(not(end) ~> (treeInvocable | expression)) <~! end mapWithPos Tree.apply
     else rep(not(end) ~> (treeInvocable | expression)) <~ end mapWithPos Tree.apply
 
-  def variableAssignment: Parser[Expression] = ((identifier ~ Assignment() ~! comparison) mapWithPos { case Identifier(name) ~ _ ~ expr => VariableAssignment(name, expr) }) | arrayAssignment
+  def variableAssignment: Parser[Expression] = ((identifier ~ Assignment() ~! booleanOperator) mapWithPos { case Identifier(name) ~ _ ~ expr => VariableAssignment(name, expr) }) | arrayAssignment
 
-  def arrayAssignment: Parser[Expression] = ((invocable ~ (BracketOpen() ~>! comparison <~! BracketClose()) ~ Assignment() ~! comparison) mapWithPos { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)}) | structureAssignment
+  def arrayAssignment: Parser[Expression] = ((invocable ~ (BracketOpen() ~>! booleanOperator <~! BracketClose()) ~ Assignment() ~! booleanOperator) mapWithPos { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)}) | structureAssignment
 
-  def structureAssignment: Parser[Expression] = ((invocable ~ (Dot() ~>! identifier) ~ Assignment() ~! comparison) mapWithPos { case structure ~ Identifier(field) ~ _ ~ expr => StructureAssignment(structure, field, expr) }) | comparison
+  def structureAssignment: Parser[Expression] = ((invocable ~ (Dot() ~>! identifier) ~ Assignment() ~! booleanOperator) mapWithPos { case structure ~ Identifier(field) ~ _ ~ expr => StructureAssignment(structure, field, expr) }) | booleanOperator
 
+  private val booleanOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "OU" -> Or.apply,
+    "ET" -> And.apply
+  )
+  
   private val compOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
     "=" -> Equality.apply,
     "!=" -> ((a, b) => Not(Equality(a, b))),
@@ -146,6 +151,8 @@ object ExpressionParser extends CYParsers with FrenchParser {
     "-" -> Negation.apply,
     "!" -> Not.apply
   )
+  
+  def booleanOperator: Parser[Expression] = comparison * (operator partialMapWithPos { case Operator(op) if booleanOps.contains(op) => booleanOps(op)})
 
   def comparison: Parser[Expression] = arith * (operator partialMapWithPos { case Operator(op) if compOps.contains(op) => compOps(op) })
 
@@ -161,7 +168,7 @@ object ExpressionParser extends CYParsers with FrenchParser {
 
   def furtherCall(expr: Expression): Parser[Expression] = (arrayCall(expr) | structureCall(expr)) >> (left => furtherCall(left) | success(left))
 
-  def arrayCall(expr: Expression): Parser[Expression] = (BracketOpen() ~>! comparison <~! BracketClose()) mapWithPos (ArrayCall(expr, _))
+  def arrayCall(expr: Expression): Parser[Expression] = (BracketOpen() ~>! booleanOperator <~! BracketClose()) mapWithPos (ArrayCall(expr, _))
 
   def structureCall(expr: Expression): Parser[Expression] = (Dot() ~>! identifier) mapWithPos { case Identifier(name) => StructureCall(expr, name) }
 

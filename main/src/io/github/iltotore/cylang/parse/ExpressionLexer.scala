@@ -97,10 +97,6 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
 
   def elseCond = keyword("SINON", Else())
 
-  def and = keyword("ET", And())
-
-  def or = keyword("OU", Or())
-
   def forLoop = keyword("POUR", For())
 
   def from = keyword("DE", From())
@@ -129,14 +125,14 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
 
   def literalText = positioned("\"[^\"]*\"".r ^^ (x => LiteralText(x.substring(1, x.length - 1))))
 
-  def operator = positioned(raw"([<>]=?)|(!?=)|[+\-*/!]|(DIV)|(MOD)".r ^^ Operator.apply)
+  def operator = positioned(raw"([<>]=?)|(!?=)|[+\-*/!]|(DIV)|(MOD)|(OU)|(ET)".r ^^ Operator.apply)
 
   def identifier = positioned(raw"\w+".r ^^ Identifier.apply)
 
   def tokens: Parser[List[Token]] = rep1(
     comma | dot | colon | parenthesisOpen | parenthesisClose | bracketOpen | bracketClose | assignment | program | begin
-      | end | variable | function | procedure | constant | structure | enumeration | elseCond | ifCond | thenCond | and
-      | or | forLoop | from | to | step | whileLoop | doToken | returnToken | arrayOf | arraySize | literalBool
+      | end | variable | function | procedure | constant | structure | enumeration | elseCond | ifCond | thenCond
+      | forLoop | from | to | step | whileLoop | doToken | returnToken | arrayOf | arraySize | literalBool
       | literalReal | literalInt | literalChar | literalText | operator | identifier
   )
 
