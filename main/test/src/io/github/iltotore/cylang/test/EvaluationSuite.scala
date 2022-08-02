@@ -478,7 +478,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
         "",
         List.empty,
@@ -495,7 +495,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
         "",
         List.empty,
@@ -530,7 +530,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("array", CYType.Array(CYType.Character, None), array),
         "",
         List.empty,
@@ -573,7 +573,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("point", CYType.StructureInstance("Point"), instance),
         "",
         List.empty,
@@ -596,7 +596,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withFunction("a", CYFunction(CYType.Integer, List.empty, Map.empty, Literal(Value.Integer(2))))
           .withFunction(
             "b",
@@ -626,7 +626,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
           .withDeclaration("i", CYType.Integer, Value.Void),
         "",
@@ -658,7 +658,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
           .withDeclaration("i", CYType.Integer, Value.Integer(0)),
         "",
@@ -695,7 +695,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("x", CYType.Integer, Value.Integer(0))
           .withDeclaration("i", CYType.Integer, Value.Integer(1)),
         "",
@@ -733,7 +733,7 @@ object EvaluationSuite extends TestSuite {
         System.in,
         System.out,
         Scope
-          .empty
+          .default
           .withDeclaration("x", CYType.Integer, Value.Integer(0)),
         "",
         List.empty,

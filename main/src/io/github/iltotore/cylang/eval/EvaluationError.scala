@@ -3,6 +3,11 @@ package io.github.iltotore.cylang.eval
 import io.github.iltotore.cylang.ast.Value
 import io.github.iltotore.cylang.{CYError, CYType, Context, Cursor}
 
+/**
+ * Represent an evaluation error.
+ * @param message the error message
+ * @param stack the stack where the error happened
+ */
 case class EvaluationError(message: String, stack: List[Cursor]) extends Error(message) with CYError {
 
   lazy val fullMessage: String = {

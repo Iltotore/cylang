@@ -3,6 +3,9 @@ package io.github.iltotore.cylang.ast
 import scala.collection.mutable
 import io.github.iltotore.cylang.{CYType, Variable}
 
+/**
+ * A computed value.
+ */
 sealed trait Value {
 
   def tpe: CYType

@@ -3,6 +3,9 @@ package io.github.iltotore.cylang.parse
 import scala.language.implicitConversions
 import scala.util.parsing.combinator.Parsers
 
+/**
+ * A Parser with french error messages
+ */
 trait FrenchParser extends Parsers {
 
   extension [A](parser: Parser[A]) {

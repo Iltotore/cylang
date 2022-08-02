@@ -4,6 +4,13 @@ import scala.util.Random
 import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Expression, Structure, Value}
 import io.github.iltotore.cylang.eval.{EvalResult, EvaluationError, Evaluator}
 
+/**
+ * The current scope of an evaluation.
+ * @param enumerations the declared enumerations
+ * @param structures the declared structures
+ * @param functions the declared functions
+ * @param variables the constants and locally-declared variables
+ */
 case class Scope(
                   enumerations: Map[String, Enumeration],
                   structures: Map[String, Structure],
@@ -11,16 +18,57 @@ case class Scope(
                   variables: Map[String, Variable]
                 ) {
 
+  /**
+   * Add a new variable to the scope.
+   * @param name the variable name
+   * @param variable the variable instance
+   * @return a copy of this scope containing the given variable
+   */
   def withVariable(name: String, variable: Variable): Scope = this.copy(variables = variables.updated(name, variable))
 
+  /**
+   * Add a new function to the scope.
+   * @param name the function name
+   * @param function the function instance
+   * @return a copy of this scope containing the given function
+   */
   def withFunction(name: String, function: CYFunction): Scope = this.copy(functions = functions.updated(name, function))
 
+  /**
+   * Add a new enumeration to the scope.
+   *
+   * @param name     the enumeration name
+   * @param enumeration the enumeration instance
+   * @return a copy of this scope containing the given enumeration
+   */
   def withEnumeration(name: String, enumeration: Enumeration): Scope = this.copy(enumerations = enumerations.updated(name, enumeration))
-  
+
+  /**
+   * Add a new function to the scope.
+   *
+   * @param name     the function name
+   * @param structure the structure instance
+   * @return a copy of this scope containing the given structure
+   */
   def withStructure(name: String, structure: Structure): Scope = this.copy(structures = structures.updated(name, structure))
-  
+
+  /**
+   * Add a new variable to the scope.
+   * @param name the variable name
+   * @param tpe the variable type
+   * @param value the variable's current value
+   * @param mutable whether the variable is mutable or not
+   * @return a copy of this scope containing the new variable
+   */
   def withDeclaration(name: String, tpe: CYType, value: Value, mutable: Boolean = true): Scope = this.withVariable(name, Variable(tpe, value, mutable))
-  
+
+  /**
+   * Assign a new value to the specified variable.
+   * @param name the name of the variable to mutate.
+   * @param value the value to assign to the variable
+   * @param Context the current evaluation context
+   * @return a copy of this scope containing the new variable, or an [[EvaluationError]]
+   */
   def withAssignment(name: String, value: Value)(using Context): Either[EvaluationError, Scope] = variables.get(name) match {
 
     case Some(variable) => Either.cond(variable.mutable, this.withVariable(name, variable.copy(value = value)), EvaluationError(s"Impossible de modifier une constante"))
@@ -30,8 +78,11 @@ case class Scope(
 }
 
 object Scope {
-  
-  val empty: Scope = Scope(
+
+  /**
+   * The default scope. Only contains builtin functions which are not representable in CYLang.
+   */
+  val default: Scope = Scope(
     enumerations = Map.empty,
     structures = Map.empty,
     functions = Map(
