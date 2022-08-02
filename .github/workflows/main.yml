@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build CLI
-        run: chmod u+rx millw && ./millw -i cli.nativeLink
+        run: ./millw.bat -i cli.nativeLink
       - name: Copy artifact
         run: cp "./out/cli/nativeLink.dest/out" "cylang.exe"
       - name: Upload native artifact
