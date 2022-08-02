@@ -30,16 +30,18 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build CLI
         run: chmod u+rx millw && ./millw -i cli.nativeLink && ./millw -i cli.assembly
+      - name: Copy artifact
+        run: cp "out/cli/nativeLink.dest/out" "cylang" && cp "out/cli/assembly.dest/out.jar" "cylang.jar"
       - name: Upload native artifact
         uses: actions/upload-artifact@v3
         with:
           name: cylang-ubuntu
-          path: out/cli/nativeLink.dest/out
+          path: cylang
       - name: Upload JVM artifact
         uses: actions/upload-artifact@v3
         with:
           name: cylang-jvm
-          path: out/cli/assembly.dest/out.jar
+          path: cylang.jar
 
   cli-windows:
     runs-on: windows-latest
@@ -47,8 +49,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build CLI
         run: chmod u+rx millw && ./millw -i cli.nativeLink
+      - name: Copy artifact
+        run: cp "./out/cli/nativeLink.dest/out" "cylang.exe"
       - name: Upload native artifact
         uses: actions/upload-artifact@v3
         with:
           name: cylang-windows
-          path: out/cli/nativeLink.dest/out
+          path: cylang.exe
