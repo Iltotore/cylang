@@ -1,6 +1,7 @@
 package io.github.iltotore.cylang.parse
 
 import io.github.iltotore.cylang.parse.Token.*
+import io.github.iltotore.cylang.util.*
 
 import scala.language.implicitConversions
 import scala.util.matching.Regex
@@ -136,7 +137,7 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
       | literalReal | literalInt | literalChar | literalText | operator | identifier
   )
 
-  def apply(code: String): Either[ParsingError, List[Token]] = parseAll(tokens, code) match {
+  def apply(code: String): Either[ParsingError, List[Token]] = parseAll(tokens, code.stripTrailingWhitespaces) match {
     case Success(result, _) => Right(result)
     case NoSuccess(msg, next) => Left(ParsingError(msg, next.pos))
   }
