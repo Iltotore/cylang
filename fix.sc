@@ -1,4 +1,4 @@
-import mill.T
+import mill._
 
 import $ivy.`org.scala-native::tools:0.4.4`
 
@@ -7,9 +7,8 @@ import mill.scalanativelib.api.{LTO, NativeConfig, NativeLogLevel, ReleaseMode}
 
 import java.lang.System.{err, out}
 import scala.scalanative.util.Scope
-import scala.scalanative.build.{Build, BuildException, Config, Discover, GC, Logger, Mode, LTO => ScalaNativeLTO, NativeConfig => ScalaNativeNativeConfig}
+import scala.scalanative.build.{Build, Config, GC, Logger, Mode, LTO => ScalaNativeLTO, NativeConfig => ScalaNativeNativeConfig}
 import scala.scalanative.nir.Versions
-import mill.scalanativelib.api.{GetFrameworkResult, LTO, NativeConfig, NativeLogLevel, ReleaseMode}
 
 import scala.jdk.OptionConverters.RichOption
 

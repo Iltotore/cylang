@@ -1,7 +1,8 @@
-import mill._
-import mill.scalalib._
+import mill._, scalalib._, define.Source
 
 import $file.fix, fix.FixedScalaNativeModule
+
+def projectVersion = "0.1.0"
 
 object main extends ScalaModule {
 
@@ -73,6 +74,7 @@ object main extends ScalaModule {
     }
 
     object test extends Tests with ChildTestModule
+
   }
 }
 
@@ -84,4 +86,20 @@ object cli extends FixedScalaNativeModule {
 
   def moduleDeps = Seq(main.native)
 
+  def versionFile: Source = T.source {
+    val file = T.dest / "versions.properties"
+    os.write(
+      file,
+      Map(
+        "CYLang" -> projectVersion,
+        "Scala" -> scalaVersion(),
+        "Scala Native" -> scalaNativeVersion()
+      )
+        .map {case (a, b) => s"$a=$b"}
+        .mkString("\n")
+    )
+    T.dest
+  }
+
+  def resources = T.sources { super.resources() :+ versionFile() }
 }

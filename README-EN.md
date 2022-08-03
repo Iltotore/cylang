@@ -23,14 +23,20 @@ Note: This section is subject to change as the first release is still being deve
 
 ### Native executable (platform dependent)
 
-You can download the native executable (without extension or .exe for Windows) and launch it via the
-command `cylang <file name>`
+You can download the native executable (without extension or .exe for Windows) and launch it using the following command:
+
+| Operating System | Launch a program                | Show current version     |
+|------------------|---------------------------------|--------------------------|
+| Windows          | `.\cylang.exe <nom du fichier>` | `.\cylang.exe --version` |
+| Linux            | `./cylang <nom du fichier>`     | `./cylang --version`     |
 
 The native executable is completely self-contained and does not require any prerequisites.
 
 ### Java executable (universal)
 
-You can download the Java executable (JAR) and launch it using the command `java -jar cylang-x.x.x.jar <file name>`
+You can download the Java executable (JAR) and launch it using the command `java -jar cylang.jar <file name>`.
+
+Use `java -jar cylang.jar --version` to check the used version of CYLang.
 
 The Java executable requires having Java 8 or higher installed.
 
