@@ -32,7 +32,7 @@ package object util extends EitherCapability {
       val builder = mutable.StringBuilder()
       var buffer = mutable.StringBuilder()
       for (chr <- str) {
-        if (chr == ' ' || chr == '\n') buffer += chr
+        if (chr.isWhitespace) buffer += chr
         else {
           if (buffer.nonEmpty) {
             builder ++= buffer
