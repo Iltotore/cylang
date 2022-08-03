@@ -6,22 +6,10 @@ import scala.util.{Failure, Success, Try}
 trait EitherCapability {
 
   /**
-   * Represent the imperative-styled Either DSL.
-   * @tparam L
-   */
-  final class EitherDSL[L]
-
-  /**
-   * An exception-based short-circuit to return a left value.
-   * @param left the returned left value
-   * @tparam L the left type
-   */
-  case class ReturnLeft[L](left: L) extends Throwable
-
-  /**
    * Entrypoint for the imperative-style either DSL.
+   *
    * @param body the function which can use the DSL
-   * @param tag the [[ClassTag]] of the `L` type
+   * @param tag  the [[ClassTag]] of the `L` type
    * @tparam L the left/error type
    * @tparam R the right/valid type
    * @return the result (right) or the thrown error (left)
@@ -38,17 +26,22 @@ trait EitherCapability {
   }
 
   /**
-   * Throw a [[ReturnLeft]] error with a left value.
-   * @param left the left value to return
-   * @param EitherDSL[L] to restrict the usage of this method
+   * Get the optional value if exist or throw the given left.
+   *
+   * @param value     the [[Option]] to get from
+   * @param leftValue the value to throw if `value` is [[None]]
+   * @param EitherDSL [L] to restrict the usage of this method
    * @tparam L the left type
+   * @tparam R the right type
+   * @return the right value if exist. Throw exception instead
    */
-  def left[L](left: L)(using EitherDSL[L]): Nothing = throw ReturnLeft(left)
+  def ensureOption[L, R](value: Option[R])(leftValue: => L)(using EitherDSL[L]): R = ensureRight(value.toRight(leftValue))
 
   /**
    * Get the right value of throw the left.
-   * @param value the either to get from
-   * @param EitherDSL[L] to restrict the usage of this method
+   *
+   * @param value     the either to get from
+   * @param EitherDSL [L] to restrict the usage of this method
    * @tparam L the left type
    * @tparam R the right type
    * @return the right value if exist. Throw exception instead
@@ -59,13 +52,26 @@ trait EitherCapability {
   }
 
   /**
-   * Get the optional value if exist or throw the given left.
-   * @param value the [[Option]] to get from
-   * @param leftValue the value to throw if `value` is [[None]]
-   * @param EitherDSL[L] to restrict the usage of this method
+   * Throw a [[ReturnLeft]] error with a left value.
+   *
+   * @param left      the left value to return
+   * @param EitherDSL [L] to restrict the usage of this method
    * @tparam L the left type
-   * @tparam R the right type
-   * @return the right value if exist. Throw exception instead
    */
-  def ensureOption[L, R](value: Option[R])(leftValue: => L)(using EitherDSL[L]): R = ensureRight(value.toRight(leftValue))
+  def left[L](left: L)(using EitherDSL[L]): Nothing = throw ReturnLeft(left)
+
+  /**
+   * Represent the imperative-styled Either DSL.
+   *
+   * @tparam L
+   */
+  final class EitherDSL[L]
+
+  /**
+   * An exception-based short-circuit to return a left value.
+   *
+   * @param left the returned left value
+   * @tparam L the left type
+   */
+  case class ReturnLeft[L](left: L) extends Throwable
 }

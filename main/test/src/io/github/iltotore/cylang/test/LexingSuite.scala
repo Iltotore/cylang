@@ -1,13 +1,11 @@
 package io.github.iltotore.cylang.test
 
-import utest.*
 import io.github.iltotore.cylang.parse.ExpressionLexer.apply as lex
 import io.github.iltotore.cylang.parse.Token
 import io.github.iltotore.cylang.parse.Token.*
+import utest.*
 
 object LexingSuite extends TestSuite {
-
-  private def assertSingle(code: String, token: Token): Unit = assertMatch(lex(code)) { case Right(List(t)) if t equals token => }
 
   val tests: Tests = Tests {
 
@@ -72,4 +70,6 @@ object LexingSuite extends TestSuite {
       }
     }
   }
+
+  private def assertSingle(code: String, token: Token): Unit = assertMatch(lex(code)) { case Right(List(t)) if t equals token => }
 }

@@ -1,13 +1,14 @@
 package io.github.iltotore.cylang.ast
 
-import scala.util.parsing.input.Position
 import io.github.iltotore.cylang.eval.EvaluationError
-import io.github.iltotore.cylang.{CYType, Context, Parameter, Scope, Variable}
+import io.github.iltotore.cylang.*
+
+import scala.util.parsing.input.Position
 
 /**
  * Represent each possible node in the AST.
  */
-enum Expression(using val position: Position){
+enum Expression(using val position: Position) {
 
   /**
    * Empty expression.

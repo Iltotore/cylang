@@ -1,31 +1,16 @@
 package io.github.iltotore.cylang.test
 
+import io.github.iltotore.cylang.ast.Expression.*
+import io.github.iltotore.cylang.ast.{Body, Expression, Value}
+import io.github.iltotore.cylang.parse.ExpressionParser.*
+import io.github.iltotore.cylang.parse.Token.*
+import io.github.iltotore.cylang.parse.{Token, TokenReader}
+import io.github.iltotore.cylang.{CYType, FixedPosition, Parameter}
 import utest.*
 
-import scala.util.parsing.input.{Position, NoPosition}
-import io.github.iltotore.cylang.{CYType, FixedPosition, Parameter}
-import io.github.iltotore.cylang.ast.{Body, Expression, Value}
-import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.parse.Token
-import io.github.iltotore.cylang.parse.Token.*
-import io.github.iltotore.cylang.parse.TokenReader
-import io.github.iltotore.cylang.parse.ExpressionParser.*
+import scala.util.parsing.input.{NoPosition, Position}
 
 object ParsingSuite extends TestSuite {
-
-  private def assertSuccess[A](parser: Parser[A], tokens: List[Token], expected: A): Unit = {
-    val result = parser(TokenReader(tokens))
-    Predef.assert(result.successful, s"Result is not successful: $result")
-    Predef.assert(result.next.atEnd, s"Remaining input: ${result.next}")
-    assert(result.get == expected)
-  }
-
-  private def assertFailure[A](parser: Parser[A], tokens: List[Token]): Unit = assertMatch(parser(TokenReader(tokens))) {
-    case Success(_, in) if !in.atEnd =>
-    case NoSuccess(_, _) =>
-  }
-
-  private def assertLiteral(parser: Parser[Expression], token: Token, expected: Value)(using Position): Unit = assertSuccess(parser, List(token), Literal(expected))
 
   val tests: Tests = Tests {
 
@@ -321,5 +306,19 @@ object ParsingSuite extends TestSuite {
 
       assertSuccess(procedureDeclaration, List(Procedure(), Identifier("test"), ParenthesisOpen(), Identifier("x"), Colon(), Identifier("entier"), ParenthesisClose(), Begin(), End()), expected)
     }
+  }
+
+  private def assertFailure[A](parser: Parser[A], tokens: List[Token]): Unit = assertMatch(parser(TokenReader(tokens))) {
+    case Success(_, in) if !in.atEnd =>
+    case NoSuccess(_, _) =>
+  }
+
+  private def assertLiteral(parser: Parser[Expression], token: Token, expected: Value)(using Position): Unit = assertSuccess(parser, List(token), Literal(expected))
+
+  private def assertSuccess[A](parser: Parser[A], tokens: List[Token], expected: A): Unit = {
+    val result = parser(TokenReader(tokens))
+    Predef.assert(result.successful, s"Result is not successful: $result")
+    Predef.assert(result.next.atEnd, s"Remaining input: ${result.next}")
+    assert(result.get == expected)
   }
 }

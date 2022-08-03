@@ -1,10 +1,10 @@
 package io.github.iltotore.cylang
 
-import scala.collection.mutable
-import ast.Structure
-import ast.Value
+import io.github.iltotore.cylang.ast.{Structure, Value}
 import io.github.iltotore.cylang.eval.EvaluationError
 import io.github.iltotore.cylang.util.*
+
+import scala.collection.mutable
 
 /**
  * The type of a value or expression.
@@ -23,6 +23,7 @@ sealed trait CYType {
 
   /**
    * Check if this type is a subtype of the given type.
+   *
    * @param other the potentially parent type
    * @return true if this type is assignable from `other`
    */
@@ -33,7 +34,51 @@ sealed trait CYType {
 
 object CYType {
 
+  val rawTypes: List[CYType] = List(CYType.Any, CYType.Integer, CYType.Real, CYType.Character, CYType.Text, CYType.Boolean)
+
   sealed trait Number extends CYType
+
+  case class Array(innerType: CYType, size: Option[Int]) extends CYType {
+
+    override def name: String = s"tableau de $innerType de taille ${size.getOrElse("inconnue")}"
+
+    override def defaultValue(using Context): Either[EvaluationError, Value] = either {
+      if (size.isEmpty) left(EvaluationError("Les variables ne peuvent pas stocker un tableau sans taille définie"))
+      val values = for (i <- 0 until size.get) yield ensureRight(innerType.defaultValue)
+      Value.Array(values.toArray)
+    }
+
+    override def isSubTypeOf(other: CYType): Boolean = other match {
+
+      case Array(innerType, Some(size)) => this.innerType.isSubTypeOf(innerType) && this.size.contains(size)
+
+      case Array(innerType, None) => this.innerType.isSubTypeOf(innerType)
+
+      case _ => super.isSubTypeOf(other)
+    }
+  }
+
+  case class EnumerationField(enumName: String) extends CYType {
+
+    override def name: String = s"ENUMERATION $enumName"
+
+    override def defaultValue(using context: Context): Either[EvaluationError, Value] =
+      for {
+        enumeration <- context.scope.enumerations.get(enumName).toRight(EvaluationError(s"L'énumération '$enumName' n'existe pas"))
+        field <- enumeration.fields.headOption.toRight(EvaluationError(s"L'énumération '$enumName' n'a pas de constante"))
+      } yield Value.EnumerationField(enumName, field)
+  }
+
+  case class StructureInstance(structName: String) extends CYType {
+
+    override def name: String = s"STRUCTURE $structName"
+
+    override def defaultValue(using context: Context): Either[EvaluationError, Value] = either {
+      val structure = ensureOption(context.scope.structures.get(structName))(EvaluationError(s"La structure '$structName' n'existe pas"))
+      val values = for (field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), true))
+      Value.StructureInstance(structName, mutable.Map.from(values))
+    }
+  }
 
   case object Real extends Number {
 
@@ -72,48 +117,6 @@ object CYType {
     override def defaultValue(using Context): Either[EvaluationError, Value] = Right(Value.Bool(true))
   }
 
-  case class Array(innerType: CYType, size: Option[Int]) extends CYType {
-
-    override def name: String = s"tableau de $innerType de taille ${size.getOrElse("inconnue")}"
-
-    override def defaultValue(using Context): Either[EvaluationError, Value] = either {
-      if(size.isEmpty) left(EvaluationError("Les variables ne peuvent pas stocker un tableau sans taille définie"))
-      val values = for(i <- 0 until size.get) yield ensureRight(innerType.defaultValue)
-      Value.Array(values.toArray)
-    }
-
-    override def isSubTypeOf(other: CYType): Boolean = other match {
-
-      case Array(innerType, Some(size)) => this.innerType.isSubTypeOf(innerType) && this.size.contains(size)
-
-      case Array(innerType, None) => this.innerType.isSubTypeOf(innerType)
-
-      case _ => super.isSubTypeOf(other)
-    }
-  }
-
-  case class EnumerationField(enumName: String) extends CYType {
-
-    override def name: String = s"ENUMERATION $enumName"
-
-    override def defaultValue(using context: Context): Either[EvaluationError, Value] =
-      for {
-        enumeration <- context.scope.enumerations.get(enumName).toRight(EvaluationError(s"L'énumération '$enumName' n'existe pas"))
-        field <- enumeration.fields.headOption.toRight(EvaluationError(s"L'énumération '$enumName' n'a pas de constante"))
-      } yield Value.EnumerationField(enumName, field)
-  }
-
-  case class StructureInstance(structName: String) extends CYType {
-
-    override def name: String = s"STRUCTURE $structName"
-
-    override def defaultValue(using context: Context): Either[EvaluationError, Value] = either {
-      val structure = ensureOption(context.scope.structures.get(structName))(EvaluationError(s"La structure '$structName' n'existe pas"))
-      val values = for(field <- structure.fields) yield (field.name, Variable(field.tpe, ensureRight(field.tpe.defaultValue), true))
-      Value.StructureInstance(structName, mutable.Map.from(values))
-    }
-  }
-
   case object Any extends CYType {
 
     override def name: String = "inconnu"
@@ -128,6 +131,4 @@ object CYType {
 
     override def defaultValue(using Context): Either[EvaluationError, Value] = Right(Value.Void)
   }
-
-  val rawTypes: List[CYType] = List(CYType.Any, CYType.Integer, CYType.Real, CYType.Character, CYType.Text, CYType.Boolean)
 }

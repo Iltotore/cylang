@@ -1,8 +1,8 @@
 package io.github.iltotore.cylang.test
 
-import io.github.iltotore.cylang.{Context, execute}
 import io.github.iltotore.cylang.ast.Value
 import io.github.iltotore.cylang.eval.given
+import io.github.iltotore.cylang.{Context, execute}
 import utest.*
 
 import java.io.{PipedInputStream, PipedOutputStream, PrintStream}

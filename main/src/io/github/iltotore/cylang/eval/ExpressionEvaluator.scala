@@ -1,9 +1,9 @@
 package io.github.iltotore.cylang.eval
 
-import io.github.iltotore.cylang.{CYType, Context, Cursor, Scope, Variable}
 import io.github.iltotore.cylang.ast.Expression.*
-import io.github.iltotore.cylang.ast.{Body, CYFunction, Enumeration, Expression, Structure, Value}
+import io.github.iltotore.cylang.ast.*
 import io.github.iltotore.cylang.util.*
+import io.github.iltotore.cylang.*
 
 import scala.collection.immutable.NumericRange
 
@@ -11,16 +11,16 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
   /**
    *
-   * @param input   the input to evaluate
+   * @param input the input to evaluate
    * @param context
-   *  @return
+   * @return
    */
   override def evaluateInput(input: Expression)(using context: Context): EvalResult = input match {
 
     case noCursor: (Tree | ProgramDeclaration) => evaluateNode(noCursor)
 
     case node =>
-      if(context.stack.headOption.forall(!_.function.equals(context.currentFunction))) evaluateNode(node)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, node.position)))
+      if (context.stack.headOption.forall(!_.function.equals(context.currentFunction))) evaluateNode(node)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, node.position)))
       else evaluateNode(node)(using context.copy(stack = context.stack.tail prepended Cursor(context.currentFunction, node.position)))
   }
 
@@ -251,8 +251,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     }
 
     case FunctionCall(name, args) =>
-      if(name equals "LIRE") {
-        if(args.isEmpty) Left(EvaluationError(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: 1"))
+      if (name equals "LIRE") {
+        if (args.isEmpty) Left(EvaluationError(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: 1"))
         else read(args.head).map(ctx => (ctx, Value.Void))
       } else eval {
         val function = currentContext.scope.functions.getOrElse(name, abort(s"Fonction inconnue: $name"))

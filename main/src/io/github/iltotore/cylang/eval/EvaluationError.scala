@@ -5,8 +5,9 @@ import io.github.iltotore.cylang.{CYError, CYType, Context, Cursor}
 
 /**
  * Represent an evaluation error.
+ *
  * @param message the error message
- * @param stack the stack where the error happened
+ * @param stack   the stack where the error happened
  */
 case class EvaluationError(message: String, stack: List[Cursor]) extends Error(message) with CYError {
 
@@ -31,11 +32,11 @@ case class EvaluationError(message: String, stack: List[Cursor]) extends Error(m
 
 object EvaluationError {
 
-  def apply(message: String)(using context: Context): EvaluationError = EvaluationError(message, context.stack)
+  def impossible(using context: Context): EvaluationError = impossible(context.stack)
 
   def impossible(stack: List[Cursor]): EvaluationError = EvaluationError("Situation impossible. Probablement un bug", stack)
 
-  def impossible(using context: Context): EvaluationError = impossible(context.stack)
-
   def typeMismatch(got: Any)(using Context): EvaluationError = EvaluationError(s"Type incompatible pour la valeur $got")
+
+  def apply(message: String)(using context: Context): EvaluationError = EvaluationError(message, context.stack)
 }

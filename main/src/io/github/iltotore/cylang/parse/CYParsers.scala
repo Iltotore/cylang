@@ -15,7 +15,7 @@ trait CYParsers extends Parsers {
     override def apply(in: Input): ParseResult[T] = Success(value(using in.pos), in)
   }
 
-  extension [T](p: Parser[T]) {
+  extension[T] (p: Parser[T]) {
 
     def mapWithPos[U](f: Position ?=> T => U): Parser[U] = new Parser {
 
@@ -31,5 +31,5 @@ trait CYParsers extends Parsers {
       }
     }
   }
-  
+
 }

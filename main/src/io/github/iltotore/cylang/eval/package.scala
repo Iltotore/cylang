@@ -1,13 +1,13 @@
 package io.github.iltotore.cylang
 
-import scala.util.{Failure, Success, Try}
-import io.github.iltotore.cylang.ast.{Expression, Value}
-import io.github.iltotore.cylang.ast.Expression.VariableCall
 import io.github.iltotore.cylang.CYType
+import io.github.iltotore.cylang.ast.Expression.VariableCall
+import io.github.iltotore.cylang.ast.{Expression, Value}
 
 import java.io.{BufferedReader, InputStreamReader}
 import java.util.Scanner
 import scala.io.StdIn
+import scala.util.{Failure, Success, Try}
 
 package object eval {
 
@@ -20,7 +20,8 @@ package object eval {
 
   /**
    * Implementation of the `LIRE` function. Wait then read the next input.
-   * @param expr the expression passed as argument
+   *
+   * @param expr    the expression passed as argument
    * @param context the current evaluation context
    * @return the updated context or an error
    */
@@ -42,7 +43,7 @@ package object eval {
 
           case CYType.Boolean =>
 
-           readLine(reader)
+            readLine(reader)
               .toBooleanOption
               .map(Value.Bool.apply)
               .toRight(EvaluationError("La valeur saisie n'est pas un booléen !"))

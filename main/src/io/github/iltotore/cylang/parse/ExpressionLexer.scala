@@ -26,8 +26,8 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
       }
       if (i == s.length)
         Success(source.subSequence(start, j).toString, in.drop(j - offset))
-      else  {
-        val found = if (start == source.length()) "fin de fichier" else "'"+source.charAt(start)+"'"
+      else {
+        val found = if (start == source.length()) "fin de fichier" else "'" + source.charAt(start) + "'"
         Failure(s"'$found' trouvé à la place de '$s'", in.drop(start - offset))
       }
     }
@@ -44,7 +44,7 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
           Success(source.subSequence(start, start + matched.end).toString,
             in.drop(start + matched.end - offset))
         case None =>
-          val found = if (start == source.length()) "fin de fichier" else "'"+source.charAt(start)+"'"
+          val found = if (start == source.length()) "fin de fichier" else "'" + source.charAt(start) + "'"
           Failure(s"'$found' trouvé à la place de '$r'", in.drop(start - offset))
       }
     }

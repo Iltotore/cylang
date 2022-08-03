@@ -1,7 +1,8 @@
 package io.github.iltotore.cylang.ast
 
-import scala.collection.mutable
 import io.github.iltotore.cylang.{CYType, Variable}
+
+import scala.collection.mutable
 
 /**
  * A computed value.
@@ -11,7 +12,7 @@ sealed trait Value {
   def tpe: CYType
 
   def value: Any
-  
+
   def valueToString: String = value.toString
 
   override def toString: String = s"($value: $tpe)"
@@ -24,11 +25,6 @@ object Value {
   trait Number extends Value {
 
     def toDouble: Double
-  }
-
-  object Number {
-
-    def unapply(number: Number): Tuple1[Double] = Tuple1(number.toDouble)
   }
 
   case class Integer(value: Int) extends Number {
@@ -58,18 +54,18 @@ object Value {
 
     override def toString: String = s"(\"$value\": $tpe)"
   }
-  
+
   case class Bool(value: Boolean) extends Value {
 
     override def tpe: CYType = CYType.Boolean
   }
-  
+
   case class Array(value: scala.Array[Value]) extends Value {
 
     override def tpe: CYType = CYType.Array(value.headOption.fold(CYType.Void)(_.tpe), Some(value.length))
 
     override def valueToString: String = value.map(_.valueToString).mkString("[", ", ", "]")
-    
+
   }
 
   case class EnumerationField(name: String, value: String) extends Value {
@@ -88,14 +84,19 @@ object Value {
       value
         .map((a, b) => s"$a -> ${b.value.valueToString}")
         .mkString(s"$name(", ", ", ")")
-    
+
+  }
+
+  object Number {
+
+    def unapply(number: Number): Tuple1[Double] = Tuple1(number.toDouble)
   }
 
   case object Void extends Value {
 
-    override def tpe: CYType = CYType.Void
-
     override val value: Null = null
+
+    override def tpe: CYType = CYType.Void
 
     override def toString: String = "VIDE"
   }

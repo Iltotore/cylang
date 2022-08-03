@@ -1,15 +1,17 @@
 package io.github.iltotore.cylang
 
-import scala.util.Random
-import io.github.iltotore.cylang.ast.{CYFunction, Enumeration, Expression, Structure, Value}
+import io.github.iltotore.cylang.ast.*
 import io.github.iltotore.cylang.eval.{EvalResult, EvaluationError, Evaluator}
+
+import scala.util.Random
 
 /**
  * The current scope of an evaluation.
+ *
  * @param enumerations the declared enumerations
- * @param structures the declared structures
- * @param functions the declared functions
- * @param variables the constants and locally-declared variables
+ * @param structures   the declared structures
+ * @param functions    the declared functions
+ * @param variables    the constants and locally-declared variables
  */
 case class Scope(
                   enumerations: Map[String, Enumeration],
@@ -19,16 +21,9 @@ case class Scope(
                 ) {
 
   /**
-   * Add a new variable to the scope.
-   * @param name the variable name
-   * @param variable the variable instance
-   * @return a copy of this scope containing the given variable
-   */
-  def withVariable(name: String, variable: Variable): Scope = this.copy(variables = variables.updated(name, variable))
-
-  /**
    * Add a new function to the scope.
-   * @param name the function name
+   *
+   * @param name     the function name
    * @param function the function instance
    * @return a copy of this scope containing the given function
    */
@@ -37,7 +32,7 @@ case class Scope(
   /**
    * Add a new enumeration to the scope.
    *
-   * @param name     the enumeration name
+   * @param name        the enumeration name
    * @param enumeration the enumeration instance
    * @return a copy of this scope containing the given enumeration
    */
@@ -46,7 +41,7 @@ case class Scope(
   /**
    * Add a new function to the scope.
    *
-   * @param name     the function name
+   * @param name      the function name
    * @param structure the structure instance
    * @return a copy of this scope containing the given structure
    */
@@ -54,18 +49,29 @@ case class Scope(
 
   /**
    * Add a new variable to the scope.
-   * @param name the variable name
-   * @param tpe the variable type
-   * @param value the variable's current value
+   *
+   * @param name    the variable name
+   * @param tpe     the variable type
+   * @param value   the variable's current value
    * @param mutable whether the variable is mutable or not
    * @return a copy of this scope containing the new variable
    */
   def withDeclaration(name: String, tpe: CYType, value: Value, mutable: Boolean = true): Scope = this.withVariable(name, Variable(tpe, value, mutable))
 
   /**
+   * Add a new variable to the scope.
+   *
+   * @param name     the variable name
+   * @param variable the variable instance
+   * @return a copy of this scope containing the given variable
+   */
+  def withVariable(name: String, variable: Variable): Scope = this.copy(variables = variables.updated(name, variable))
+
+  /**
    * Assign a new value to the specified variable.
-   * @param name the name of the variable to mutate.
-   * @param value the value to assign to the variable
+   *
+   * @param name    the name of the variable to mutate.
+   * @param value   the value to assign to the variable
    * @param Context the current evaluation context
    * @return a copy of this scope containing the new variable, or an [[EvaluationError]]
    */

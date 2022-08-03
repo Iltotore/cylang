@@ -1,10 +1,10 @@
 package io.github.iltotore.cylang.test
 
-import utest.*
-import io.github.iltotore.cylang.{Context, execute}
-import io.github.iltotore.cylang.ast.Value
 import io.github.iltotore.cylang.ast.Expression.*
+import io.github.iltotore.cylang.ast.Value
 import io.github.iltotore.cylang.eval.given
+import io.github.iltotore.cylang.{Context, execute}
+import utest.*
 
 import scala.io.Source
 
@@ -74,6 +74,6 @@ object IntegrationSuite extends TestSuite {
 
       assertMatch(execute(source).map(_._1.scope.variables("result").value)) { case Right(Value.Integer(5)) => }
     }
-    
+
   }
 }

@@ -29,13 +29,6 @@ trait Evaluator[-A] {
   //Evaluation DSL
 
   /**
-   * Represent the imperative-styled evaluation DSL.
-   *
-   * @param context the embedded context
-   */
-  case class EvalDSL(var context: Context)
-
-  /**
    * Evaluation DSL entrypoint.
    *
    * @param ev      the function which can use the DSL
@@ -71,6 +64,15 @@ trait Evaluator[-A] {
   inline def abort(message: String)(using EvalDSL): Nothing = throw EvaluationError(message)
 
   /**
+   * Evaluate the given input then unbox the result.
+   *
+   * @param toEvaluate the input to evaluate
+   * @param EvalDSL    to restrict the usage of this method
+   * @return the [[Value]] of the produced [[EvalResult]]. Use the result's [[Context]] as new current context
+   */
+  def evalUnbox(toEvaluate: A)(using EvalDSL): Value = unbox(toEvaluate.evaluate)
+
+  /**
    * Extract the given [[EvalResult]].
    *
    * @param result the result to unbox
@@ -87,13 +89,13 @@ trait Evaluator[-A] {
   }
 
   /**
-   * Evaluate the given input then unbox the result.
+   * Use the given context as new current.
    *
-   * @param toEvaluate the input to evaluate
-   * @param EvalDSL    to restrict the usage of this method
-   * @return the [[Value]] of the produced [[EvalResult]]. Use the result's [[Context]] as new current context
+   * @param context the context to use
+   * @param dsl     to restrict the usage of this method
    */
-  def evalUnbox(toEvaluate: A)(using EvalDSL): Value = unbox(toEvaluate.evaluate)
+  def update(context: Context)(using dsl: EvalDSL): Unit =
+    dsl.context = context.copy(currentFunction = dsl.context.currentFunction, stack = dsl.context.stack)
 
   /**
    * Extract the given [[EvalResult]].
@@ -110,10 +112,9 @@ trait Evaluator[-A] {
   }
 
   /**
-   * Use the given context as new current.
-   * @param context the context to use
-   * @param dsl to restrict the usage of this method
+   * Represent the imperative-styled evaluation DSL.
+   *
+   * @param context the embedded context
    */
-  def update(context: Context)(using dsl: EvalDSL): Unit =
-    dsl.context = context.copy(currentFunction = dsl.context.currentFunction, stack = dsl.context.stack)
+  case class EvalDSL(var context: Context)
 }

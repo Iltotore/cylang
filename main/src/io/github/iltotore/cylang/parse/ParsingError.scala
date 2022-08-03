@@ -6,7 +6,8 @@ import scala.util.parsing.input.{NoPosition, Position}
 
 /**
  * Represent a parsing error.
- * @param msg the error message
+ *
+ * @param msg      the error message
  * @param position the position where the error happened
  */
 case class ParsingError(msg: String, position: Position = NoPosition) extends Error(msg) with CYError {

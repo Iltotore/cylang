@@ -1,9 +1,9 @@
 package io.github.iltotore.cylang.parse
 
-import io.github.iltotore.cylang.{CYType, Parameter, execute}
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.ast.{Body, Expression, Value}
-import Token.*
+import io.github.iltotore.cylang.parse.Token.*
+import io.github.iltotore.cylang.{CYType, Parameter, execute}
 
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.*
@@ -13,15 +13,33 @@ import scala.util.parsing.input.Position
 object ExpressionParser extends CYParsers with FrenchParser {
 
   override type Elem = Token
-
-  //Tokens with parameters
-  private def literalBool: Parser[LiteralBool] = accept("boolean literal", { case x: LiteralBool => x })
-  private def literalInt: Parser[LiteralInt] = accept("integer literal", { case x: LiteralInt => x })
-  private def literalReal: Parser[LiteralReal] = accept("real literal", { case x: LiteralReal => x })
-  private def literalChar: Parser[LiteralChar] = accept("char literal", { case x: LiteralChar => x })
-  private def literalText: Parser[LiteralText] = accept("text literal", { case x: LiteralText => x })
-  private def identifier: Parser[Identifier] = accept("identifier", { case x: Identifier => x })
-  private def operator: Parser[Operator] = accept("operator", { case x: Operator => x })
+  private val booleanOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "OU" -> Or.apply,
+    "ET" -> And.apply
+  )
+  private val compOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "=" -> Equality.apply,
+    "!=" -> ((a, b) => Not(Equality(a, b))),
+    ">" -> Greater.apply,
+    ">=" -> GreaterEqual.apply,
+    "<" -> Less.apply,
+    "<=" -> LessEqual.apply
+  )
+  private val arithOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "+" -> Addition.apply,
+    "-" -> Subtraction.apply
+  )
+  private val termOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
+    "*" -> Multiplication.apply,
+    "/" -> Division.apply,
+    "DIV" -> WholeDivision.apply,
+    "MOD" -> Modulo.apply
+  )
+  private val unaryOps: Map[String, Position ?=> Expression => Expression] = Map(
+    "+" -> (x => x),
+    "-" -> Negation.apply,
+    "!" -> Not.apply
+  )
 
   def program: Parser[ProgramDeclaration] = Program() ~>! identifier ~! rep(not(body) ~> declaration) ~! body mapWithPos {
     case Identifier(name) ~ declarations ~ main => ProgramDeclaration(name, declarations, main)
@@ -33,9 +51,13 @@ object ExpressionParser extends CYParsers with FrenchParser {
 
   //Literal
   def bool: Parser[Literal] = literalBool mapWithPos { case LiteralBool(value) => Literal(Value.Bool(value)) }
+
   def integer: Parser[Literal] = literalInt mapWithPos { case LiteralInt(value) => Literal(Value.Integer(value)) }
+
   def real: Parser[Literal] = literalReal mapWithPos { case LiteralReal(value) => Literal(Value.Real(value)) }
+
   def character: Parser[Literal] = literalChar mapWithPos { case LiteralChar(value) => Literal(Value.Character(value)) }
+
   def text: Parser[Literal] = literalText mapWithPos { case LiteralText(value) => Literal(Value.Text(value)) }
 
   def literalSymbol: Parser[Literal] = bool | text | character | real | integer
@@ -98,61 +120,29 @@ object ExpressionParser extends CYParsers with FrenchParser {
 
   def whileLoop: Parser[WhileLoop] = While() ~> expression ~ Do() ~ tree(End() ~ While()) mapWithPos { case cond ~ _ ~ expr => WhileLoop(cond, expr) }
 
-  def doWhileLoop: Parser[DoWhileLoop] = Do() ~> tree(While()) ~ expression mapWithPos { case expr ~ cond => DoWhileLoop(cond, expr)}
+  def doWhileLoop: Parser[DoWhileLoop] = Do() ~> tree(While()) ~ expression mapWithPos { case expr ~ cond => DoWhileLoop(cond, expr) }
 
   def ifElse: Parser[IfCondition] = If() ~> expression ~ Then() ~ ifBody mapWithPos {
     case cond ~ _ ~ (expr ~ elseExpr) => IfCondition(cond, expr, elseExpr)
   }
 
-  def ifBody: Parser[~[Expression, Expression]] = (tree(Else(), hard=false) ~! (ifElse | tree(End() ~ If(), hard=false))) | (tree(End() ~ If()) ~! empty)
+  def ifBody: Parser[~[Expression, Expression]] = (tree(Else(), hard = false) ~! (ifElse | tree(End() ~ If(), hard = false))) | (tree(End() ~ If()) ~! empty)
 
   def treeReturn: Parser[Expression] = Return() ~>! (expression | empty) mapWithPos ReturnExpr.apply
 
   def treeInvocable: Parser[Expression] = forLoop | whileLoop | doWhileLoop | ifElse | treeReturn
 
   def tree(end: Parser[?], hard: Boolean = true): Parser[Tree] =
-    if(hard) rep(not(end) ~> (treeInvocable | expression)) <~! end mapWithPos Tree.apply
+    if (hard) rep(not(end) ~> (treeInvocable | expression)) <~! end mapWithPos Tree.apply
     else rep(not(end) ~> (treeInvocable | expression)) <~ end mapWithPos Tree.apply
 
   def variableAssignment: Parser[Expression] = ((identifier ~ Assignment() ~! booleanOperator) mapWithPos { case Identifier(name) ~ _ ~ expr => VariableAssignment(name, expr) }) | arrayAssignment
 
-  def arrayAssignment: Parser[Expression] = ((invocable ~ (BracketOpen() ~>! booleanOperator <~! BracketClose()) ~ Assignment() ~! booleanOperator) mapWithPos { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr)}) | structureAssignment
+  def arrayAssignment: Parser[Expression] = ((invocable ~ (BracketOpen() ~>! booleanOperator <~! BracketClose()) ~ Assignment() ~! booleanOperator) mapWithPos { case array ~ index ~ _ ~ expr => ArrayAssignment(array, index, expr) }) | structureAssignment
 
   def structureAssignment: Parser[Expression] = ((invocable ~ (Dot() ~>! identifier) ~ Assignment() ~! booleanOperator) mapWithPos { case structure ~ Identifier(field) ~ _ ~ expr => StructureAssignment(structure, field, expr) }) | booleanOperator
 
-  private val booleanOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
-    "OU" -> Or.apply,
-    "ET" -> And.apply
-  )
-  
-  private val compOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
-    "=" -> Equality.apply,
-    "!=" -> ((a, b) => Not(Equality(a, b))),
-    ">" -> Greater.apply,
-    ">=" -> GreaterEqual.apply,
-    "<" -> Less.apply,
-    "<=" -> LessEqual.apply
-  )
-
-  private val arithOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
-    "+" -> Addition.apply,
-    "-" -> Subtraction.apply
-  )
-
-  private val termOps: Map[String, Position ?=> (Expression, Expression) => Expression] = Map(
-    "*" -> Multiplication.apply,
-    "/" -> Division.apply,
-    "DIV" -> WholeDivision.apply,
-    "MOD" -> Modulo.apply
-  )
-
-  private val unaryOps: Map[String, Position ?=> Expression => Expression] = Map(
-    "+" -> (x => x),
-    "-" -> Negation.apply,
-    "!" -> Not.apply
-  )
-  
-  def booleanOperator: Parser[Expression] = comparison * (operator partialMapWithPos { case Operator(op) if booleanOps.contains(op) => booleanOps(op)})
+  def booleanOperator: Parser[Expression] = comparison * (operator partialMapWithPos { case Operator(op) if booleanOps.contains(op) => booleanOps(op) })
 
   def comparison: Parser[Expression] = arith * (operator partialMapWithPos { case Operator(op) if compOps.contains(op) => compOps(op) })
 
@@ -168,7 +158,7 @@ object ExpressionParser extends CYParsers with FrenchParser {
 
   def furtherCall(expr: Expression): Parser[Expression] = (arrayCall(expr) | structureCall(expr)) >> (left => furtherCall(left) | success(left))
 
-  def arrayCall(expr: Expression): Parser[Expression] = (BracketOpen() ~>! booleanOperator <~! BracketClose()) mapWithPos (ArrayCall(expr, _))
+  def arrayCall(expr: Expression): Parser[Expression] = (BracketOpen() ~>! booleanOperator <~! BracketClose()) mapWithPos(ArrayCall(expr, _))
 
   def structureCall(expr: Expression): Parser[Expression] = (Dot() ~>! identifier) mapWithPos { case Identifier(name) => StructureCall(expr, name) }
 
@@ -179,4 +169,19 @@ object ExpressionParser extends CYParsers with FrenchParser {
     case Success(_, _) => Left(ParsingError(s"Le programme doit se terminer par `FIN`"))
     case NoSuccess(msg, next) => Left(ParsingError(msg, next.pos))
   }
+
+  //Tokens with parameters
+  private def literalBool: Parser[LiteralBool] = accept("boolean literal", { case x: LiteralBool => x })
+
+  private def literalInt: Parser[LiteralInt] = accept("integer literal", { case x: LiteralInt => x })
+
+  private def literalReal: Parser[LiteralReal] = accept("real literal", { case x: LiteralReal => x })
+
+  private def literalChar: Parser[LiteralChar] = accept("char literal", { case x: LiteralChar => x })
+
+  private def literalText: Parser[LiteralText] = accept("text literal", { case x: LiteralText => x })
+
+  private def identifier: Parser[Identifier] = accept("identifier", { case x: Identifier => x })
+
+  private def operator: Parser[Operator] = accept("operator", { case x: Operator => x })
 }
