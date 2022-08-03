@@ -18,21 +18,19 @@ Le projet se concentre sur trois points fondamentaux:
 
 *Note: Cette section est susceptible de changer au fur et à mesure du développement de la première release*
 
+[**Lien vers les téléchargements**](https://github.com/Iltotore/cylang/releases)
+
+### Exécutable natif (dépend de la plateforme)
+
+Vous pouvez télécharger l'exécutable natif (sans extension ou .exe pour Windows) et le lancer via la commande `./cylang <nom du fichier>`
+
+L'exécutable natif est entièrement autonome et ne nécessite pas de prérequis.
+
 ### Exécutable Java (universel)
 
 Vous pouvez télécharger l'exécutable Java (JAR) et le lancer via la commande `java -jar cylang-x.x.x.jar <nom du fichier>`.
 
 L'exécutable Java nécessite d'avoir au moins Java 8 ou plus installé sur l'ordinateur.
-
-### Exécutable natif (dépend de la plateforme)
-
-Vous pouvez télécharger l'exécutable natif (sans extension ou .exe pour Windows) et le lancer via la commande `cylang <nom du fichier>`
-
-L'exécutable natif est entièrement autonome et ne nécessite pas de prérequis.
-
-<br>
-
-[**Lien vers les téléchargements**](https://github.com/Iltotore/cylang/releases)
 
 
 ## Fonctionnement interne

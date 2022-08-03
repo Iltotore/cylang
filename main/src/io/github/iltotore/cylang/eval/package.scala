@@ -11,12 +11,19 @@ import scala.io.StdIn
 
 package object eval {
 
+  /**
+   * Represent the result of an AST evaluation.
+   */
   type EvalResult = Either[EvaluationError, (Context, Value)]
-
-  type Evaluation = Context ?=> EvalResult
 
   given Evaluator[Expression] = new ExpressionEvaluator
 
+  /**
+   * Implementation of the `LIRE` function. Wait then read the next input.
+   * @param expr the expression passed as argument
+   * @param context the current evaluation context
+   * @return the updated context or an error
+   */
   def read(expr: Expression)(using context: Context): Either[EvaluationError, Context] = {
 
     def readLine(reader: BufferedReader): String = {

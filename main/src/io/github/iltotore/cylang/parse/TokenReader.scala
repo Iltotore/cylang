@@ -2,6 +2,10 @@ package io.github.iltotore.cylang.parse
 
 import scala.util.parsing.input.{NoPosition, Position, Reader}
 
+/**
+ * A Reader that consume [[Token]]s
+ * @param tokens the tokens to consume
+ */
 class TokenReader(tokens: List[Token]) extends Reader[Token]{
 
   override def first: Token = if(atEnd) Token.EOF() else tokens.head

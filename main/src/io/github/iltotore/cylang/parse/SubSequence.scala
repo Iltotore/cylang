@@ -1,7 +1,9 @@
 package io.github.iltotore.cylang.parse
 
-import scala.util.parsing.combinator.SubSequence
 
+/**
+ * Non-private clone of [[scala.util.parsing.combinator.SubSequence]]
+ */
 class SubSequence(s: CharSequence, start: Int, val length: Int) extends CharSequence {
   def this(s: CharSequence, start: Int) = this(s, start, s.length - start)
 

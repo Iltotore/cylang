@@ -6,12 +6,26 @@ import ast.Value
 import io.github.iltotore.cylang.eval.EvaluationError
 import io.github.iltotore.cylang.util.*
 
+/**
+ * The type of a value or expression.
+ */
 sealed trait CYType {
 
+  /**
+   * The string representation of this type
+   */
   def name: String
 
+  /**
+   * The default value of this type (when annotating a variable)
+   */
   def defaultValue(using Context): Either[EvaluationError, Value]
 
+  /**
+   * Check if this type is a subtype of the given type.
+   * @param other the potentially parent type
+   * @return true if this type is assignable from `other`
+   */
   def isSubTypeOf(other: CYType): Boolean = this.equals(other) || other.equals(CYType.Any)
 
   override def toString: String = name
