@@ -1,7 +1,7 @@
 <!-- Completed by Colack :) -->
 
 <p align="center">
-  <img src="logo.png" alt="Logo"/>
+  <img src="logo.png" alt="Logo", width="353", height="170.5"/>
 </p>
 
 CYTech's pseudo-code based programming language.
