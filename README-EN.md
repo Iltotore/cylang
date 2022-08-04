@@ -1,6 +1,8 @@
 <!-- Completed by Colack :) -->
 
-# CYLang
+<p align="center">
+  <img src="logo.png" alt="Logo"/>
+</p>
 
 CYTech's pseudo-code based programming language.
 

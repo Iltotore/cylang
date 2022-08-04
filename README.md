@@ -1,4 +1,6 @@
-# CYLang
+<p align="center">
+  <img src="logo.png" alt="Logo"/>
+</p>
 
 Le langage de programmation basé sur le pseudo-code de CYTech.   
 
