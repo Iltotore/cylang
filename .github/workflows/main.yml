@@ -25,15 +25,13 @@ jobs:
         run: chmod u+rx millw && ./millw -i main.testAll
 
   cli-ubuntu:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - name: Build CLI
         run: chmod u+rx millw && ./millw -i cli.nativeLink && ./millw -i cli.assembly
       - name: Copy artifact
         run: cp "out/cli/nativeLink.dest/out" "cylang" && cp "out/cli/assembly.dest/out.jar" "cylang.jar"
-      - name: Install UPX
-        run: sudo apt install -y upx-ucl
       - name: Compress CYLang executable using UPX
         run: upx --best cylang
       - name: Upload native artifact
