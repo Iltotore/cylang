@@ -4,6 +4,8 @@
   <img src="logo.png" alt="Logo" width="353" height="170.5"/>
 </p>
 
+*This document is derived from CY Cergy Paris University's logo: www.cyu.fr. Reproduction rights reserved.*
+
 ---
 
 CYTech's pseudo-code based programming language.

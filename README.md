@@ -2,6 +2,8 @@
   <img src="logo.png" alt="Logo" width="353" height="170.5"/>
 </p>
 
+*Ce document est dérivé du logo du site de CY Cergy Paris Université : www.cyu.fr. Les droits de reproduction sont réservés.*
+
 ---
 
 Le langage de programmation basé sur le pseudo-code de CYTech.   
