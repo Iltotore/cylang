@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/logo.png" alt="Logo" width="353" height="170.5"/>
+  <img src="./assets/images/logo.png" alt="Logo" width="353" height="170.5"/>
 </p>
 
 *Ce document est dérivé du logo du site de CY Cergy Paris Université : www.cyu.fr. Les droits de reproduction sont réservés.*
@@ -8,7 +8,7 @@
 
 Le langage de programmation basé sur le pseudo-code de CYTech.   
 
-Read the English version [here.](https://github.com/Iltotore/cylang/blob/master/README-EN.md)
+Read the English version [here.](./assets/md/README-EN.md)
 
 ## Introduction
 
