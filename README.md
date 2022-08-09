@@ -102,7 +102,7 @@ vous serez simplement invités à corriger le bug introduit.
 
 ## Questions
 
-Pour toute question concernant CYLang, voici les différents moyens de la poser:
+Pour toute question concernant CYLang, voici les différents moyens de la poser :
 - Ouvrir une Issue (Voir la section "Issues")
 - Envoyer un mail à `fromentinr@cy-tech.fr` (mail universitaire de l'auteur principal)
 - Envoyer un message privé à `Il_totore#9133` (compte de l'auteur principal) sur Discord

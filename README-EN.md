@@ -8,18 +8,18 @@
 
 ---
 
-CYTech's pseudo-code based programming language.
+CYTech's pseudocode based programming language.
 
 ## Introduction
 
-CYLang is a project aiming to standardize and make executable pseudo-code in order to facilitate the introduction to
+CYLang is a project aiming to standardize and make executable pseudocode in order to facilitate the introduction to
 computer science for students in the first year of the cycle.
 
 The project focuses on three fundamental points:
 
-- Allow students to test their algorithm written in pseudo-code
+- Allow students to test their algorithm written in pseudocode
 - Allow teachers to test their examples and make them interactive
-- Standardize the syntax of the pseudo-code between the different TDs/Teachers
+- Standardize the syntax of the pseudocode between the different TDs/Teachers
 
 ### Usage
 
@@ -53,7 +53,7 @@ called "parsing") into a tree called AST which can be traversed for various purp
 - Assessment: "execute" the AST.
 - Typechecking: Check the consistency of the types of the different operations (example: do not subtract a text from a
   number)
-- Scope resolution: Check that each variable/function/etc used exists.
+- Scope resolution: Check that each variable/function/etc. used exists.
 - etc.
 
 The project is divided into three main categories of modules:
@@ -75,7 +75,7 @@ just follow the outline given when writing its content.
 
 ### Code Changes
 
-#### Preparing your work enviornment
+#### Preparing your work environment
 
 CYLang uses a tool called [Mill](https://com-lihaoyi.github.io/mill/mill/Intro_to_Mill.html) which makes it easy to
 prepare your workspace.
@@ -88,11 +88,11 @@ using `mill <module name>.test`
 
 #### Notes:
 
-- The `test` task automatically executes the compile task if it has not been launched before. So you don't need to
+- The `test` task automatically executes the `compile` task if it has not been launched before. So you don't need to
   compile then `test`. You can directly use `module.test.`
 - On Windows, if you consistently get an error at the end of a task started via `mill <task>`, use `mill -i <task>`
   instead.
-- Most IDE's "build" button works and you can use it instead of `mill module.compile`.
+- Most IDE's "build" button works. You can use it instead of `mill module.compile`.
 - You can run a task (like test) on all modules that have it use `__.` Example: `mill __.test`
 
 #### Pull Requests
@@ -100,13 +100,13 @@ using `mill <module name>.test`
 [Pull Requests](https://github.com/Iltotore/cylang/pulls) (PR) are a simple and stable way to propose
 modifications/additions in the code of CYLang.
 
-The process is the same as for other projects hosted on Github or similar platforms:
+The process is the same as for other projects hosted on GitHub or similar platforms:
 
 - Create a fork of the project (an alternative version automatically hosted on your account)
 
 - Make the changes to propose on your fork (find out about the use of the Git tool)
 
-- Open a Pull Request (Github will automatically suggest it to you on your fork page) describing the changes made and
+- Open a Pull Request (GitHub will automatically suggest it to you on your fork page) describing the changes made and
   using the keyword `Closes #XX` if this PR closes/responds to one or more issues.
 
 Note that only Pull Requests that pass all the tests will be accepted. If this is not the case and the error comes from
@@ -117,5 +117,5 @@ your modifications, you will simply be invited to correct the bug introduced.
 If you have any questions about CYLang, here are the different ways to ask:
 
 - Open an Issue (See "Issues" section)
-- Send an email to `fromentinr@cy-tech.fr` (university email of the main author)
+- Email `fromentinr@cy-tech.fr` (university email of the main author)
 - Send a private message to `Il_totore#9133` (main author account) on Discord
