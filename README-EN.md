@@ -1,12 +1,4 @@
-<!-- Completed by Colack :) -->
-
-<p align="center">
-  <img src="logo.png" alt="Logo" width="353" height="170.5"/>
-</p>
-
-*This document is derived from CY Cergy Paris University's logo: www.cyu.fr. Reproduction rights reserved.*
-
----
+# CY Lang
 
 CYTech's pseudocode based programming language.
 
