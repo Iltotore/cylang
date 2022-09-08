@@ -42,7 +42,7 @@ L'exécutable Java nécessite d'avoir au moins Java 8 ou plus installé sur l'or
 
 ## Fonctionnement interne
 
-CY Lang est interpréteur écrit en [Scala](https://scala-lang.org).
+CY Lang est un interpréteur écrit en [Scala](https://scala-lang.org).
 Le fonctionnement général d'un interpréteur est de transformer le code source (étape appelée "parsing") en un arbre appelé AST qui pourra être parcouru à diverses fins :
 - Evaluation : "exécuter" l'AST
 - Typechecking : Vérifier la cohérence des types des différentes opérations (exemple : ne pas soustraire un texte à un nombre)
