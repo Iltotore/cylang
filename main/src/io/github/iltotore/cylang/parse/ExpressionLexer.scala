@@ -130,12 +130,15 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
 
   def identifier = positioned(raw"\w+".r ^^ Identifier.apply)
 
-  def tokens: Parser[List[Token]] = rep1(
-    comma | dot | colon | parenthesisOpen | parenthesisClose | bracketOpen | bracketClose | assignment | program | begin
-      | end | variable | function | procedure | constant | structure | enumeration | elseCond | ifCond | thenCond
-      | forLoop | from | to | step | whileLoop | doToken | returnToken | arrayOf | arraySize | literalBool
-      | literalReal | literalInt | literalChar | literalText | operator | identifier
-  )
+  def comment: Parser[String] = "//.*".r
+
+  def token: Parser[Token] =
+    comma | dot | colon | parenthesisOpen | parenthesisClose | bracketOpen | bracketClose
+    | assignment | program | begin | end | variable | function | procedure | constant | structure | enumeration
+    | elseCond | ifCond | thenCond | forLoop | from | to | step | whileLoop | doToken | returnToken | arrayOf
+    | arraySize | literalBool | literalReal | literalInt | literalChar | literalText | operator | identifier
+
+  def tokens: Parser[List[Token]] = rep(comment.* ~> token) <~ comment.*
 
   def apply(code: String): Either[ParsingError, List[Token]] =
     parseAll(tokens, code.stripTrailingWhitespaces) match {
