@@ -1,5 +1,10 @@
 # Project exclude paths
 /.bsp/
+/.bloop/
 /out/
 /.idea/
 /.run/
+/.metals/
+/.vscode/
+settings.json
+*.iml
