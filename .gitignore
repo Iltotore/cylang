@@ -6,5 +6,10 @@
 /.run/
 /.metals/
 /.vscode/
+/webeditor/.parcel-cache/
+/webeditor/dist/
+/webeditor/node_modules/
+/webeditor/out/
+package-lock.json
 settings.json
 *.iml
