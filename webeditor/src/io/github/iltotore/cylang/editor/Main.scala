@@ -1,35 +1,46 @@
 package io.github.iltotore.cylang.editor
 
-import scala.io.Source
-import scala.util.Try
 import cats.effect.IO
-import tyrian.Html.*
-import tyrian.*
-
-import scala.scalajs.js.annotation.*
-import org.scalajs.dom
-
 import io.github.iltotore.cylang.*
-import io.github.iltotore.cylang.eval.given
 import io.github.iltotore.cylang.editor.util.readTextFile
+import io.github.iltotore.cylang.eval.given
+import org.scalajs.dom
+import tyrian.*
+import tyrian.Html.*
+
+import scala.io.Source
+import scala.scalajs.js.annotation.*
+import scala.util.Try
 
 @JSExportTopLevel("TyrianApp")
 object Main extends TyrianApp[Msg, EditorModel] {
 
-  def init(flags: Map[String, String]): (EditorModel, Cmd[IO, Msg]) = //TODO Use JS' FileReader
-    val contextIO =
+  def init(flags: Map[String, String]): (EditorModel, Cmd[IO, Msg]) =
+    val loadPredef =
       for {
         stdSrc <- readTextFile("predef.cy")
-        stdRes <- IO.fromEither(execute(stdSrc)(using Context.empty))
-      } yield stdRes._1
+        stdRes <- runCode(stdSrc, Context.empty)
+      } yield stdRes
 
-    (EditorModel(Context.empty), Cmd.Run(contextIO, Msg.SwitchContext.apply))
+    (EditorModel.empty, Cmd.Run(loadPredef, Msg.LoadPredef.apply))
 
   def update(model: EditorModel): Msg => (EditorModel, Cmd[IO, Msg]) = {
 
-    case Msg.SwitchContext(ctx) =>
-      println(ctx)
-      (model.copy(context = ctx), Cmd.None)
+    case Msg.LoadPredef(Right(ctx)) =>
+      (model.copy(context = ctx, output = "Bibliothèque standard chargée"), Cmd.None)
+
+    case Msg.LoadPredef(Left(error)) => (model.copy(output = error.toString), Cmd.None)
+
+    case Msg.EditCode(code) => (model.copy(currentCode = code), Cmd.None)
+
+    case Msg.Run =>
+      (model.copy(output = "Lancement..."), Cmd.Run(runCode(model.currentCode, model.context), result => Msg.Finish(result.left.toOption)))
+
+    case Msg.Clear => (model.copy(output = ""), Cmd.None)
+
+    case Msg.Finish(error) =>
+      val result = error.map(_.toString).getOrElse("Exécution terminée")
+      (model.copy(output = s"${model.output}\n$result"), Cmd.None)
 
     case _ => (model, Cmd.None)
   }
@@ -49,12 +60,13 @@ object Main extends TyrianApp[Msg, EditorModel] {
         )
     )(
       div(
-        button()("Exécuter"),
+        button(onClick(Msg.Run))("Exécuter"),
         button()("Télécharger"),
         button()("Effacer la console")
       ),
       textarea(
         spellcheck := false,
+        onInput(Msg.EditCode.apply),
         styles(
           ("margin", "0"),
           ("padding", "0"),
@@ -74,18 +86,24 @@ object Main extends TyrianApp[Msg, EditorModel] {
           ("white-space", "pre-wrap"),
           ("overflow", "auto")
         )
-      )("Hello World\na\na\na\na\na\na\na\na\na\na\na\na\na\na")
+      )(model.output)
     )
 
   def subscriptions(model: EditorModel): Sub[IO, Msg] =
     Sub.None
+
+  private def runCode(code: String, context: Context): IO[Either[CYError, Context]] =
+    IO(execute(code)(using context).map(_._1))
+
 }
 
 
 enum Msg {
-  case SwitchContext(context: Context)
+  case LoadPredef(result: Either[CYError, Context])
+  case EditCode(code: String)
   case Run
+  case Finish(error: Option[CYError])
   case Download
-  case Clean
+  case Clear
   case Print
 }
