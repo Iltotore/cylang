@@ -115,12 +115,28 @@ object webeditor extends ScalaJSModule {
 
   def scalaJSVersion = "1.11.0"
 
-  def moduleDest = Seq(main.js)
+  def moduleDeps = Seq(main.js)
 
-  def ivyDeps = Agg(
+  def ivyDeps = super.ivyDeps() ++ Agg(
+    ivy"org.scala-js::scalajs-dom::2.2.0",
     ivy"io.indigoengine::tyrian::0.5.1",
     ivy"io.indigoengine::tyrian-io::0.5.1"
   )
 
-  override def moduleKind = T(mill.scalajslib.api.ModuleKind.CommonJSModule)
+  def moduleKind = T(mill.scalajslib.api.ModuleKind.CommonJSModule)
+
+  def buildSite() = T.command {
+    os.copy.into(fastOpt().path, T.dest)
+
+    val resourcesDir = T.dest / "resources" //os.pwd / "webeditor" / "dist"
+
+    if(!os.exists(resourcesDir)) os.makeDir(resourcesDir)
+    
+    (resources() ++ main.js.resources())
+      .map(_.path)
+      .filter(os.exists)
+      .flatMap(os.list)
+      .foreach(x => os.copy.into(x, resourcesDir))
+
+  }
 }

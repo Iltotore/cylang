@@ -1,5 +1,5 @@
 import {
     TyrianApp
-} from '../out/webeditor/fastOpt.dest/out.js';
+} from '../out/webeditor/buildSite.dest/out.js';
 
  TyrianApp.launch("myapp");
