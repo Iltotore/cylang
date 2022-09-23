@@ -13,6 +13,7 @@ import java.io.PrintStream
 import scala.concurrent.duration.*
 import scala.io.Source
 import scala.scalajs.js.annotation.*
+import scala.scalajs.js.Dynamic
 import scala.util.Try
 
 @JSExportTopLevel("TyrianApp")
@@ -42,6 +43,10 @@ object Main extends TyrianApp[Msg, EditorModel] {
 
     case Msg.Run =>
       (model.copy(output = "Lancement...\n"), Cmd.Run(runCode(model.currentCode, model.context), result => Msg.Finish(result.left.toOption)))
+
+    case Msg.Download =>
+      Dynamic.global.alert("Disponible bientôt.")
+      (model, Cmd.None)
 
     case Msg.Clear => (model.copy(output = ""), Cmd.None)
 
@@ -73,7 +78,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
     )(
       div(
         button(onClick(Msg.Run))("Exécuter"),
-        button()("Télécharger"),
+        button(onClick(Msg.Download))("Télécharger"),
         button(onClick(Msg.Clear))("Effacer la console")
       ),
       textarea(
