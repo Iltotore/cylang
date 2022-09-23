@@ -2,7 +2,7 @@ package io.github.iltotore.cylang.editor
 
 import cats.effect.IO
 import io.github.iltotore.cylang.*
-import io.github.iltotore.cylang.editor.util.{readInput, readTextFile, subFromStream}
+import io.github.iltotore.cylang.editor.util.*
 import io.github.iltotore.cylang.eval.given
 import org.scalajs.dom
 import tyrian.*
