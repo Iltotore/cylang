@@ -3,6 +3,7 @@ package io.github.iltotore.cylang
 import io.github.iltotore.cylang.ast.Value
 
 import java.io.{InputStream, PrintStream}
+import io.github.iltotore.cylang.util.LineReader
 
 /**
  * An evaluation context.
@@ -14,12 +15,12 @@ import java.io.{InputStream, PrintStream}
  * @param stack           the current evaluation stack
  * @param returned        the (optionally) returned value
  */
-case class Context(in: InputStream, out: PrintStream, scope: Scope, currentFunction: String, stack: List[Cursor], returned: Option[Value])
+case class Context(in: LineReader, out: PrintStream, scope: Scope, currentFunction: String, stack: List[Cursor], returned: Option[Value])
 
 object Context {
 
   /**
    * An empty context using System's I/O.
    */
-  val empty: Context = Context(System.in, System.out, Scope.default, "en-tête du programme", List.empty, None)
+  val empty: Context = Context(LineReader.fromInputStream(System.in), System.out, Scope.default, "en-tête du programme", List.empty, None)
 }
