@@ -21,11 +21,12 @@ object Main extends TyrianApp[Msg, EditorModel] {
   def init(flags: Map[String, String]): (EditorModel, Cmd[IO, Msg]) =
 
     val pipe = PullableOutputStream()
+    val printStream = PrintStream(pipe)
 
     val loadPredef =
       for {
         stdSrc <- readTextFile("predef.cy")
-        stdRes <- runCode(stdSrc, Context.empty.copy(out = PrintStream(pipe)))
+        stdRes <- runCode(stdSrc, Context.empty.copy(in = PromptReader(), out = printStream))
       } yield stdRes
 
     (EditorModel.empty(pipe), Cmd.Run(loadPredef, Msg.LoadPredef.apply))
@@ -107,7 +108,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
       .map(Msg.Print.apply)
 
   private def runCode(code: String, context: Context): IO[Either[CYError, Context]] =
-    IO(execute(code)(using context).map(_._1))
+    IO.blocking(execute(code)(using context).map(_._1))
 
 }
 
