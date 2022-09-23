@@ -120,7 +120,9 @@ object webeditor extends ScalaJSModule {
   def ivyDeps = super.ivyDeps() ++ Agg(
     ivy"org.scala-js::scalajs-dom::2.2.0",
     ivy"io.indigoengine::tyrian::0.5.1",
-    ivy"io.indigoengine::tyrian-io::0.5.1"
+    ivy"io.indigoengine::tyrian-io::0.5.1",
+    ivy"co.fs2::fs2-core:3.3.0",
+    ivy"co.fs2::fs2-io:3.3.0"
   )
 
   def moduleKind = T(mill.scalajslib.api.ModuleKind.CommonJSModule)

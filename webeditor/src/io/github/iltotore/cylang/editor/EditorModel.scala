@@ -2,9 +2,11 @@ package io.github.iltotore.cylang.editor
 
 import io.github.iltotore.cylang.Context
 
-case class EditorModel(context: Context, currentCode: String, output: String)
+import java.io.PipedOutputStream
+
+case class EditorModel(context: Context, currentCode: String, output: String, outPipe: PipedOutputStream)
 
 object EditorModel {
   
-  val empty: EditorModel = EditorModel(Context.empty, "", "")
+  def empty(outPipe: PipedOutputStream): EditorModel = EditorModel(Context.empty, "", "", outPipe)
 }

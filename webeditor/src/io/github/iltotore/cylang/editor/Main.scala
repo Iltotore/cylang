@@ -2,12 +2,13 @@ package io.github.iltotore.cylang.editor
 
 import cats.effect.IO
 import io.github.iltotore.cylang.*
-import io.github.iltotore.cylang.editor.util.readTextFile
+import io.github.iltotore.cylang.editor.util.{readInput, readTextFile, subFromStream}
 import io.github.iltotore.cylang.eval.given
 import org.scalajs.dom
 import tyrian.*
 import tyrian.Html.*
 
+import java.io.{PipedInputStream, PipedOutputStream, PrintStream}
 import scala.io.Source
 import scala.scalajs.js.annotation.*
 import scala.util.Try
@@ -16,13 +17,16 @@ import scala.util.Try
 object Main extends TyrianApp[Msg, EditorModel] {
 
   def init(flags: Map[String, String]): (EditorModel, Cmd[IO, Msg]) =
+
+    val pipe = PipedOutputStream()
+
     val loadPredef =
       for {
         stdSrc <- readTextFile("predef.cy")
-        stdRes <- runCode(stdSrc, Context.empty)
+        stdRes <- runCode(stdSrc, Context.empty.copy(out = PrintStream(pipe)))
       } yield stdRes
 
-    (EditorModel.empty, Cmd.Run(loadPredef, Msg.LoadPredef.apply))
+    (EditorModel.empty(pipe), Cmd.Run(loadPredef, Msg.LoadPredef.apply))
 
   def update(model: EditorModel): Msg => (EditorModel, Cmd[IO, Msg]) = {
 
@@ -41,6 +45,10 @@ object Main extends TyrianApp[Msg, EditorModel] {
     case Msg.Finish(error) =>
       val result = error.map(_.toString).getOrElse("Exécution terminée")
       (model.copy(output = s"${model.output}\n$result"), Cmd.None)
+
+    case Msg.Print(msg) =>
+      print(msg)
+      (model.copy(output = s"${model.output}$msg"), Cmd.None)
 
     case _ => (model, Cmd.None)
   }
@@ -62,7 +70,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
       div(
         button(onClick(Msg.Run))("Exécuter"),
         button()("Télécharger"),
-        button()("Effacer la console")
+        button(onClick(Msg.Clear))("Effacer la console")
       ),
       textarea(
         spellcheck := false,
@@ -90,7 +98,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
     )
 
   def subscriptions(model: EditorModel): Sub[IO, Msg] =
-    Sub.None
+    subFromStream("outPipe", readInput(PipedInputStream(model.outPipe))).map(Msg.Print.apply)
 
   private def runCode(code: String, context: Context): IO[Either[CYError, Context]] =
     IO(execute(code)(using context).map(_._1))
@@ -105,5 +113,5 @@ enum Msg {
   case Finish(error: Option[CYError])
   case Download
   case Clear
-  case Print
+  case Print(message: String)
 }
