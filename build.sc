@@ -130,7 +130,7 @@ object webeditor extends ScalaJSModule {
   def buildSite() = T.command {
     os.copy.into(fastOpt().path, T.dest)
 
-    val resourcesDir = T.dest / "resources" //os.pwd / "webeditor" / "dist"
+    val resourcesDir = T.dest / "resources"
 
     if(!os.exists(resourcesDir)) os.makeDir(resourcesDir)
     
