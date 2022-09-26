@@ -53,7 +53,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
     case Msg.Finish(error) =>
       val result = error.map(_.toString).getOrElse("Exécution terminée")
       model.context.out.println(result)
-      (model, Cmd.None)
+      (model, Cmd.Run(fetchConsoleOutput(model.outPipe), Msg.Print.apply))
 
     case Msg.Print(msg) =>
       print(msg)
@@ -106,14 +106,13 @@ object Main extends TyrianApp[Msg, EditorModel] {
       )(model.output)
     )
 
-  def subscriptions(model: EditorModel): Sub[IO, Msg] =
-    Sub.every[IO](1.millisecond, "output")
-      .map(_ => model.outPipe.dequeueAllData)
-      .map(seq => String(seq.toArray))
-      .map(Msg.Print.apply)
+  def subscriptions(model: EditorModel): Sub[IO, Msg] = Sub.None
 
   private def runCode(code: String, context: Context): IO[Either[CYError, Context]] =
     IO.blocking(execute(code)(using context).map(_._1))
+
+  def fetchConsoleOutput(out: PullableOutputStream): IO[String] =
+    IO(out.dequeueAllData).map(seq => String(seq.toArray))
 
 }
 
