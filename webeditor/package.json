@@ -5,8 +5,10 @@
     }
   },
   "scripts": {
-    "start": "parcel index.html --no-cache --dist-dir dist --public-url ./ --log-level info",
-    "build": "parcel build index.html --dist-dir dist --public-url ./ --log-level info"
+    "start": "parcel index.html --no-cache --dist-dir dist --log-level info",
+    "build": "parcel build index.html --dist-dir dist --log-level info",
+    "gh-build": "parcel build index.html --dist-dir dist --public-url ./ --log-level info",
+    "clean": "rm -r dist"
   },
   "devDependencies": {
     "parcel": "^2.1.0",

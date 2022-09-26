@@ -37,7 +37,7 @@ jobs:
         run: chmod u+rx millw && ./millw webeditor.buildSite
 
       - name: Build site
-        run: cd webeditor && npm install && npm run build
+        run: cd webeditor && npm install && npm run gh-build
 
       - uses: actions/upload-pages-artifact@v1.0.4
         with:
