@@ -64,45 +64,23 @@ object Main extends TyrianApp[Msg, EditorModel] {
 
   def view(model: EditorModel): Html[Msg] =
     div(
-        styles(
-          ("top", "0"),
-          ("left", "0"),
-          ("margin", "0"),
-          ("padding", "0"),
-          ("width", "100%"),
-          ("height", "90vh"),
-          ("max-height", "90vh"),
-          ("width", "100vw"),
-          ("max-width", "100vw")
-        )
+      id := "fulldiv",
+      className := "noborder"
     )(
-      div(
-        button(onClick(Msg.Run))("Exécuter"),
-        button(onClick(Msg.Download))("Télécharger"),
-        button(onClick(Msg.Clear))("Effacer la console")
+      div(id := "toolbar")(
+        button(className := "button", onClick(Msg.Run))("Exécuter"),
+        button(className := "button", onClick(Msg.Download))("Télécharger"),
+        button(className := "button", onClick(Msg.Clear))("Effacer la console")
       ),
       textarea(
+        id := "editor",
+        className := "noborder",
         spellcheck := false,
-        onInput(Msg.EditCode.apply),
-        styles(
-          ("margin", "0"),
-          ("padding", "0"),
-          ("resize", "none"),
-          ("width", "100%"),
-          ("height", "70%"),
-          ("border", "none")
-        )
+        onInput(Msg.EditCode.apply)
       )(),
       div(
-        styles(
-          ("margin", "0"),
-          ("padding", "0"),
-          ("resize", "height"),
-          ("width", "100%"),
-          ("height", "30%"),
-          ("white-space", "pre-wrap"),
-          ("overflow", "auto")
-        )
+        id := "console",
+        className := "noborder"
       )(model.output)
     )
 
