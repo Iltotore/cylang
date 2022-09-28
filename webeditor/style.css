@@ -7,13 +7,13 @@ html, body {
 }
 
 .button {
+    display: inline-block;
     background-color: #1690c2;
     color: white;
     padding: 15px 32px;
     border: 0;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
     font: 16px "Lato", sans-serif;
     height: 100%;
 }
@@ -42,6 +42,44 @@ html, body {
     height: 9%;
     max-height: 60px;
     resize: none;
+    display: flex;
+    flex-direction: row;
+}
+
+#buttons {
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+}
+
+#social {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-grow: 1;
+    height: 100%;
+    color: black;
+    text-decoration: none;
+}
+
+#social:hover {
+    color: white;
+    filter: brightness(0%) saturate(100%) invert();
+}
+
+.socialLogo {
+    object-fit: contain;
+    padding: 5px;
+}
+
+.socialText {
+    display: inline-block;
+    padding: 5px;
+    font: 16px "Lato", sans-serif;
+    text-align: center;
+    height: "50%";
+    margin-top: auto;
+    margin-bottom: auto;
+    width: fit-content;
 }
 
 #editor {

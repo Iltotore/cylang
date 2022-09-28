@@ -9,11 +9,10 @@ import tyrian.*
 import tyrian.Html.*
 
 import java.io.PrintStream
-
-import scala.concurrent.duration.*
+import scala.concurrent.duration.given
 import scala.io.Source
-import scala.scalajs.js.annotation.*
 import scala.scalajs.js.Dynamic
+import scala.scalajs.js.annotation.*
 import scala.util.Try
 
 @JSExportTopLevel("TyrianApp")
@@ -58,8 +57,6 @@ object Main extends TyrianApp[Msg, EditorModel] {
     case Msg.Print(msg) =>
       print(msg)
       (model.copy(output = s"${model.output}$msg"), Cmd.None)
-
-    case _ => (model, Cmd.None)
   }
 
   def view(model: EditorModel): Html[Msg] =
@@ -68,9 +65,15 @@ object Main extends TyrianApp[Msg, EditorModel] {
       className := "noborder"
     )(
       div(id := "toolbar")(
-        button(className := "button", onClick(Msg.Run))("Exécuter"),
-        button(className := "button", onClick(Msg.Download))("Télécharger"),
-        button(className := "button", onClick(Msg.Clear))("Effacer la console")
+        div(id := "buttons")(
+          button(className := "button", onClick(Msg.Run))("Exécuter"),
+          button(className := "button", onClick(Msg.Download))("Télécharger"),
+          button(className := "button", onClick(Msg.Clear))("Effacer la console")
+        ),
+        a(id := "social", href := "https://github.com/Iltotore/cylang")(
+          img(className := "socialLogo", src := "github_icon.svg"),
+          span(className := "socialText")("CY Lang créé par Raphaël FROMENTIN")
+        )
       ),
       textarea(
         id := "editor",
