@@ -16,9 +16,11 @@ Le projet se concentre sur trois points fondamentaux :
 
 ## Utilisation
 
-*Note : Cette section est susceptible de changer au fur et à mesure du développement de la première release*
-
 [**Lien vers les téléchargements**](https://github.com/Iltotore/cylang/releases)
+
+### Editeur web
+
+Vous pouvez utiliser l'éditeur web à [cette adresse](https://iltotore.github.io/cylang/).
 
 ### Exécutable natif (dépend de la plateforme)
 

@@ -13,11 +13,13 @@ The project focuses on three fundamental points:
 - Allow teachers to test their examples and make them interactive
 - Standardize the syntax of the pseudocode between the different TDs/Teachers
 
-### Usage
-
-Note: This section is subject to change as the first release is still being developed.
+## Usage
 
 [**Releases/Downloads**](https://github.com/Iltotore/cylang/releases)
+
+### Web editor
+
+You can use the web editor and interpreter [here](https://iltotore.github.io/cylang/)
 
 ### Native executable (platform dependent)
 
