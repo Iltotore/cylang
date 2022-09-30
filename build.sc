@@ -1,4 +1,4 @@
-import mill._, scalalib._, define.Source
+import mill._, scalalib._, scalajslib._, define.Source
 
 import $file.fix, fix.FixedScalaNativeModule
 
@@ -6,7 +6,7 @@ def projectVersion = "0.1.0"
 
 object main extends ScalaModule {
 
-  def scalaVersion = "3.1.0"
+  def scalaVersion = "3.1.3"
 
   def ivyDeps = Agg(
     ivy"org.scala-lang.modules::scala-parser-combinators::2.1.1"
@@ -76,11 +76,16 @@ object main extends ScalaModule {
     object test extends Tests with ChildTestModule
 
   }
+
+  object js extends ChildModule with ScalaJSModule {
+
+    def scalaJSVersion = "1.11.0"
+  }
 }
 
 object cli extends FixedScalaNativeModule {
 
-  def scalaVersion = "3.1.0"
+  def scalaVersion = main.scalaVersion
 
   def scalaNativeVersion = "0.4.4"
 
@@ -102,4 +107,38 @@ object cli extends FixedScalaNativeModule {
   }
 
   def resources = T.sources { super.resources() :+ versionFile() }
+}
+
+object webeditor extends ScalaJSModule {
+
+  def scalaVersion = main.scalaVersion
+
+  def scalaJSVersion = "1.11.0"
+
+  def moduleDeps = Seq(main.js)
+
+  def ivyDeps = super.ivyDeps() ++ Agg(
+    ivy"org.scala-js::scalajs-dom::2.2.0",
+    ivy"io.indigoengine::tyrian::0.5.1",
+    ivy"io.indigoengine::tyrian-io::0.5.1",
+    ivy"co.fs2::fs2-core:3.3.0",
+    ivy"co.fs2::fs2-io:3.3.0"
+  )
+
+  def moduleKind = T(mill.scalajslib.api.ModuleKind.CommonJSModule)
+
+  def buildSite() = T.command {
+    os.copy.into(fastOpt().path, T.dest)
+
+    val resourcesDir = T.dest / "resources"
+
+    if(!os.exists(resourcesDir)) os.makeDir(resourcesDir)
+    
+    (resources() ++ main.js.resources())
+      .map(_.path)
+      .filter(os.exists)
+      .flatMap(os.list)
+      .foreach(x => os.copy.into(x, resourcesDir))
+
+  }
 }

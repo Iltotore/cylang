@@ -1,0 +1,25 @@
+{
+  "alias": {
+    "process": {
+      "global": "{}"
+    }
+  },
+  "scripts": {
+    "start": "parcel index.html --no-cache --dist-dir dist --log-level info",
+    "build": "parcel build index.html --dist-dir dist --log-level info",
+    "gh-build": "parcel build index.html --dist-dir dist --public-url ./ --log-level info",
+    "clean": "rm -r dist"
+  },
+  "devDependencies": {
+    "parcel": "^2.1.0",
+    "parcel-reporter-static-files-copy": "^1.4.0"
+  },
+  "dependencies": {
+    "assert": "^2.0.0",
+    "polyfill": "^0.1.0",
+    "process": "^0.11.10"
+  },
+  "staticFiles": {
+    "staticPath": "../out/webeditor/buildSite.dest/resources/"
+  }
+}

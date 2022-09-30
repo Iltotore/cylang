@@ -7,6 +7,7 @@ import io.github.iltotore.cylang.{CYType, Context, FixedPosition, Parameter, Sco
 import io.github.iltotore.cylang.ast.*
 import io.github.iltotore.cylang.ast.Expression.*
 import io.github.iltotore.cylang.eval.{*, given}
+import io.github.iltotore.cylang.util.LineReader
 
 object EvaluationSuite extends TestSuite {
 
@@ -475,7 +476,7 @@ object EvaluationSuite extends TestSuite {
     test("variableCall") {
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -492,7 +493,7 @@ object EvaluationSuite extends TestSuite {
     test("variableAssignment") {
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -527,7 +528,7 @@ object EvaluationSuite extends TestSuite {
       val array = Value.Array(Array(Value.Character('a'), Value.Character('b')))
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -570,7 +571,7 @@ object EvaluationSuite extends TestSuite {
       ))
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -593,7 +594,7 @@ object EvaluationSuite extends TestSuite {
     test("functionCall") {
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -623,7 +624,7 @@ object EvaluationSuite extends TestSuite {
 
     test("forLoop") {
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -655,7 +656,7 @@ object EvaluationSuite extends TestSuite {
     test("whileLoop") {
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -692,7 +693,7 @@ object EvaluationSuite extends TestSuite {
     test("doWhileLoop") {
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default
@@ -730,7 +731,7 @@ object EvaluationSuite extends TestSuite {
     test("if") {
 
       given Context = Context(
-        System.in,
+        LineReader.fromInputStream(System.in),
         System.out,
         Scope
           .default

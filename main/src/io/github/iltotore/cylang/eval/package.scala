@@ -8,6 +8,7 @@ import java.io.{BufferedReader, InputStreamReader}
 import java.util.Scanner
 import scala.io.StdIn
 import scala.util.{Failure, Success, Try}
+import io.github.iltotore.cylang.util.LineReader
 
 package object eval {
 
@@ -27,7 +28,7 @@ package object eval {
    */
   def read(expr: Expression)(using context: Context): Either[EvaluationError, Context] = {
 
-    def readLine(reader: BufferedReader): String = {
+    def readLine(reader: LineReader): String = {
       var line = reader.readLine()
       while (line == null) line = reader.readLine()
       line
@@ -37,7 +38,7 @@ package object eval {
 
       case VariableCall(name) if context.scope.variables.contains(name) =>
 
-        val reader = new BufferedReader(new InputStreamReader(context.in))
+        val reader = context.in
 
         val value = context.scope.variables(name).tpe match {
 
