@@ -483,7 +483,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       test("existing") - assertMatch(VariableCall("a").evaluate) { case Right((_, Value.Integer(2))) => }
@@ -500,7 +501,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("a", CYType.Integer, Value.Integer(2)),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       test("existing") {
@@ -535,7 +537,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("array", CYType.Array(CYType.Character, None), array),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       test("inBounds") - assertMatch(
@@ -578,7 +581,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("point", CYType.StructureInstance("Point"), instance),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
 
@@ -610,7 +614,8 @@ object EvaluationSuite extends TestSuite {
           ),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       test("constant") - assertMatch(FunctionCall("a", List.empty).evaluate) { case Right((_, Value.Integer(2))) => }
@@ -632,7 +637,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("i", CYType.Integer, Value.Void),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       val result =
@@ -664,7 +670,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("i", CYType.Integer, Value.Integer(0)),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       val result = WhileLoop(
@@ -701,7 +708,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("i", CYType.Integer, Value.Integer(1)),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       def result(condition: Expression) = DoWhileLoop(
@@ -738,7 +746,8 @@ object EvaluationSuite extends TestSuite {
           .withDeclaration("x", CYType.Integer, Value.Integer(0)),
         "",
         List.empty,
-        None
+        None,
+        32
       )
 
       def ast(condition: Boolean, elseCond: Expression) = IfCondition(
