@@ -104,4 +104,5 @@ html, body {
     font-size: 16px;
     padding: 5px;
     white-space: pre-wrap;
+    overflow-y: auto;
 }
