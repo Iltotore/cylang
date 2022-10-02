@@ -20,8 +20,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
     case noCursor: (Tree | ProgramDeclaration) => evaluateNode(noCursor)
 
     case node =>
-      if (context.stack.headOption.forall(!_.function.equals(context.currentFunction))) evaluateNode(node)(using context.copy(stack = context.stack prepended Cursor(context.currentFunction, node.position)))
-      else evaluateNode(node)(using context.copy(stack = context.stack.tail prepended Cursor(context.currentFunction, node.position)))
+      val tail = if(context.stack.isEmpty) List.empty else context.stack.tail
+      evaluateNode(node)(using context.copy(stack = tail prepended Cursor(context.currentFunction, node.position)))
   }
 
   def evaluateNode(input: Expression)(using context: Context): EvalResult = input match {
@@ -250,10 +250,13 @@ class ExpressionEvaluator extends Evaluator[Expression] {
       }
     }
 
-    case FunctionCall(name, args) =>
-      if (name equals "LIRE") {
+    case call@FunctionCall(name, args) =>
+      if(context.stack.size >= context.maxDepth) Left(EvaluationError.stackOverflow)
+      else if (name equals "LIRE") {
         if (args.isEmpty) Left(EvaluationError(s"Nombre d'arguments incorrects pour la fonction $name. Obtenu: ${args.length}, Attendu: 1"))
-        else read(args.head).map(ctx => (ctx, Value.Void))
+        else
+          read(args.head)(using context.copy(stack = context.stack prepended Cursor(name, call.position)))
+            .map(ctx => (ctx, Value.Void))
       } else eval {
         val function = currentContext.scope.functions.getOrElse(name, abort(s"Fonction inconnue: $name"))
         if (args.length != function.parameters.length)
@@ -264,7 +267,17 @@ class ExpressionEvaluator extends Evaluator[Expression] {
         val globalScope = currentContext
           .scope
           .copy(variables = currentContext.scope.variables.filterNot(_._2.mutable))
-        partialUnbox(function.evaluate(values)(using currentContext.copy(scope = globalScope, currentFunction = s"FONCTION $name"), this))._2
+
+        partialUnbox(
+          function.evaluate(values)(using
+            currentContext.copy(
+              scope = globalScope,
+              currentFunction = s"FONCTION $name",
+              stack = currentContext.stack prepended Cursor(name, call.position)
+            ),
+            this
+          )
+        )._2
       }
 
     case ForLoop(name, from, to, step, expression) => eval {
@@ -369,13 +382,17 @@ class ExpressionEvaluator extends Evaluator[Expression] {
         Value.Void
       ))
 
-    case ProgramDeclaration(name, declarations, Body(variables, expression)) => eval {
+    case decl@ProgramDeclaration(name, declarations, Body(variables, expression)) => eval {
       declarations.foreach(evalUnbox)
       val scope = variables.foldLeft(currentContext.scope)((scope, param) => param.tpe.defaultValue(using currentContext) match {
         case Right(value) => scope.withDeclaration(param.name, param.tpe, value)
         case Left(err) => throw err
       })
-      unbox(expression.evaluate(using currentContext.copy(scope = scope, currentFunction = "PROGRAMME PRINCIPAL")))
+      unbox(expression.evaluate(using currentContext.copy(
+        scope = scope,
+        currentFunction = "PROGRAMME PRINCIPAL",
+        stack = context.stack prepended Cursor("PROGRAMME PRINCIPAL", decl.position)
+      )))
     }
   }
 }

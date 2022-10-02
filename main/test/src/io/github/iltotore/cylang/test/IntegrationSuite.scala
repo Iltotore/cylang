@@ -75,5 +75,20 @@ object IntegrationSuite extends TestSuite {
       assertMatch(execute(source).map(_._1.scope.variables("result").value)) { case Right(Value.Integer(5)) => }
     }
 
+    test("stackOverflow") {
+      val source: String =
+        """PROGRAMME stackOverflow
+          |
+          |PROCEDURE recur()
+          |DEBUT
+          |  recur()
+          |FIN
+          |
+          |DEBUT
+          |  recur()
+          |FIN""".stripMargin
+
+      assertMatch(execute(source)) { case Left(_) => }   
+    }
   }
 }

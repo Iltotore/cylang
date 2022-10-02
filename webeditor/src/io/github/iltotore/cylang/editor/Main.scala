@@ -26,7 +26,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
     val loadPredef =
       for {
         stdSrc <- readTextFile("predef.cy")
-        stdRes <- runCode(stdSrc, Context.empty.copy(in = PromptReader(), out = printStream))
+        stdRes <- runCode(stdSrc, Context.empty.copy(in = PromptReader(), out = printStream, maxDepth = 15))
       } yield stdRes
 
     (EditorModel.empty(pipe), Cmd.Run(loadPredef, Msg.LoadPredef.apply))

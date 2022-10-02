@@ -13,7 +13,7 @@ case class EvaluationError(message: String, stack: List[Cursor]) extends Error(m
 
   lazy val fullMessage: String = {
 
-    val distinctStack = stack.distinct
+    val distinctStack = stack
 
     if (stack.isEmpty) s"Erreur: $message"
     else
@@ -37,6 +37,8 @@ object EvaluationError {
   def impossible(stack: List[Cursor]): EvaluationError = EvaluationError("Situation impossible. Probablement un bug", stack)
 
   def typeMismatch(got: Any)(using Context): EvaluationError = EvaluationError(s"Type incompatible pour la valeur $got")
+
+  def stackOverflow(using ctx: Context): EvaluationError = EvaluationError(s"Profondeur maximale atteinte (récursion infinie ?). Limite: ${ctx.maxDepth}")
 
   def apply(message: String)(using context: Context): EvaluationError = EvaluationError(message, context.stack)
 }
