@@ -18,6 +18,7 @@ object LexingSuite extends TestSuite {
       test("bracketOpen") - assertLex("[", BracketOpen())
       test("bracketClose") - assertLex("]", BracketClose())
       test("assignment") - assertLex("<-", Assignment())
+      test("placeholder") - assertLex("???", PlaceholderT())
     }
 
     test("keyword") {

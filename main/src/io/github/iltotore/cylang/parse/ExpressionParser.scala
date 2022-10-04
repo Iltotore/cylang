@@ -49,6 +49,8 @@ object ExpressionParser extends CYParsers with FrenchParser {
 
   def empty: Parser[Empty] = successWithPos(Empty())
 
+  def placeholder: Parser[Placeholder] = PlaceholderT() ~> successWithPos(Placeholder())
+
   //Literal
   def bool: Parser[Literal] = literalBool mapWithPos { case LiteralBool(value) => Literal(Value.Bool(value)) }
 
@@ -162,7 +164,7 @@ object ExpressionParser extends CYParsers with FrenchParser {
 
   def structureCall(expr: Expression): Parser[Expression] = (Dot() ~>! identifier) mapWithPos { case Identifier(name) => StructureCall(expr, name) }
 
-  def invocable: Parser[Expression] = literalSymbol | parenthesized | functionCall | variableCall
+  def invocable: Parser[Expression] = placeholder | literalSymbol | parenthesized | functionCall | variableCall
 
   def apply(tokens: List[Token]): Either[ParsingError, Expression] = program(TokenReader(tokens)) match {
     case Success(result, in) if in.atEnd => Right(result)

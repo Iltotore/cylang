@@ -16,6 +16,8 @@ object ParsingSuite extends TestSuite {
 
     given Position = NoPosition
 
+    test("placeholder") - assertSuccess(placeholder, List(PlaceholderT()), Placeholder())
+
     test("literal") {
       test("bool") - assertLiteral(bool, LiteralBool(true), Value.Bool(true))
       test("int") - assertLiteral(integer, LiteralInt(14), Value.Integer(14))

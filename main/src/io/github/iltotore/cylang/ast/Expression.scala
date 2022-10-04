@@ -16,6 +16,11 @@ enum Expression(using val position: Position) {
   case Empty()(using position: Position)
 
   /**
+   * "Not implemented" placeholder.
+   */
+  case Placeholder()(using position: Position)
+
+  /**
    * A numeric or string literal.
    */
   case Literal(value: Value)(using position: Position)

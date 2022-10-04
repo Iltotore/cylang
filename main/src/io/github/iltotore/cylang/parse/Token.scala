@@ -29,6 +29,8 @@ object Token { //Note: We cannot use Dotty's enum here because we want all our c
 
   case class Assignment() extends Token("<-")
 
+  case class PlaceholderT() extends Token("???")
+
   //Keywords
   case class Program() extends Token("PROGRAMME")
 

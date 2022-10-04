@@ -28,6 +28,8 @@ class ExpressionEvaluator extends Evaluator[Expression] {
 
     case Empty() => Right((context, Value.Void))
 
+    case Placeholder() => Left(EvaluationError.notImplemented)
+
     case Literal(value) => Right((context, value))
 
     case Negation(expression) => eval {

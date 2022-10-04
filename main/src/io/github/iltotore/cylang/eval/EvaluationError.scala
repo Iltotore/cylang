@@ -40,5 +40,7 @@ object EvaluationError {
 
   def stackOverflow(using ctx: Context): EvaluationError = EvaluationError(s"Profondeur maximale atteinte (récursion infinie ?). Limite: ${ctx.maxDepth}")
 
+  def notImplemented(using Context): EvaluationError = EvaluationError("Pas implémenté")
+
   def apply(message: String)(using context: Context): EvaluationError = EvaluationError(message, context.stack)
 }

@@ -17,6 +17,8 @@ object EvaluationSuite extends TestSuite {
 
     given Context = Context.empty
 
+    test("placeholder") - assertMatch(Placeholder().evaluate) { case Left(_) => }
+
     test("literal") - assertMatch(Literal(Value.Bool(true)).evaluate) { case Right((_, Value.Bool(true))) => }
 
     test("negation") {

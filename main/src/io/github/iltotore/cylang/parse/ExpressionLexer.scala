@@ -74,6 +74,8 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
 
   def assignment = symbol("<-", Assignment())
 
+  def placeholder = symbol("???", PlaceholderT())
+
   def program = keyword("PROGRAMME", Program())
 
   def begin = keyword("DEBUT", Begin())
@@ -133,8 +135,8 @@ object ExpressionLexer extends RegexParsers with FrenchParser {
   def comment: Parser[String] = "//.*".r
 
   def token: Parser[Token] =
-    comma | dot | colon | parenthesisOpen | parenthesisClose | bracketOpen | bracketClose
-    | assignment | program | begin | end | variable | function | procedure | constant | structure | enumeration
+    comma | dot | colon | parenthesisOpen | parenthesisClose | bracketOpen | bracketClose | assignment | placeholder
+    | program | begin | end | variable | function | procedure | constant | structure | enumeration
     | elseCond | ifCond | thenCond | forLoop | from | to | step | whileLoop | doToken | returnToken | arrayOf
     | arraySize | literalBool | literalReal | literalInt | literalChar | literalText | operator | identifier
 
