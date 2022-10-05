@@ -96,14 +96,3 @@ object Main extends TyrianApp[Msg, EditorModel] {
     IO(out.dequeueAllData).map(seq => String(seq.toArray))
 
 }
-
-
-enum Msg {
-  case LoadPredef(result: Either[CYError, Context])
-  case EditCode(code: String)
-  case Run
-  case Finish(error: Option[CYError])
-  case Download
-  case Clear
-  case Print(message: String)
-}
