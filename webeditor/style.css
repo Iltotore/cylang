@@ -29,6 +29,8 @@ html, body {
 }
 
 #fulldiv {
+    display: flex;
+    flex-direction: column;
     left: 0;
     right: 0;
     height: 100vh;
@@ -83,9 +85,10 @@ html, body {
 }
 
 #editor {
+    display: flex;
+    flex-grow: 2;
     background-color: #EEEEEE;
     width: 100%;
-    height: 61%;
     font: 16px "Fira Code", monospace;
     border: none;
     resize: none;
@@ -96,10 +99,11 @@ html, body {
 
 
 #console {
+    display: flex;
+    flex-grow: 1;
     background-color: #002b36;
     color: white;
     width: 100%;
-    height: 30%;
     font-family: monospace;
     font-size: 16px;
     padding: 5px;
