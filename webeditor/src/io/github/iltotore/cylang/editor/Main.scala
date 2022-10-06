@@ -44,7 +44,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
       (model.copy(output = "Lancement...\n"), Cmd.Run(runCode(model.currentCode, model.context), result => Msg.Finish(result.left.toOption)))
 
     case Msg.Download =>
-      Dynamic.global.alert("Disponible bientôt.")
+      generateFile("code.cy", model.currentCode)
       (model, Cmd.None)
 
     case Msg.Clear => (model.copy(output = ""), Cmd.None)
