@@ -75,12 +75,7 @@ object Main extends TyrianApp[Msg, EditorModel] {
           span(className := "socialText")("CY Lang créé par Raphaël FROMENTIN")
         )
       ),
-      textarea(
-        id := "editor",
-        className := "noborder",
-        spellcheck := false,
-        onInput(Msg.EditCode.apply)
-      )(),
+      gui.editor(model.currentCode.count(_ == '\n')),
       div(
         id := "console",
         className := "noborder"

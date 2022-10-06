@@ -88,13 +88,29 @@ html, body {
     display: flex;
     flex-grow: 2;
     background-color: #EEEEEE;
-    width: 100%;
+    overflow: scroll;
+    resize: none;
     font: 16px "Fira Code", monospace;
+}
+
+#line-index {
+    width: 3ch;
+    text-align: end;
+    white-space: pre-wrap;
+    padding-right: 1ch;
+    padding-top: 4px;
+    line-height: 1.9ch;
+}
+
+#editor-code {
+    display: flex;
+    flex-grow: 1;
     border: none;
     resize: none;
     white-space: pre-wrap;
-    overflow: auto;
     outline: none;
+    line-height: 1.9ch;
+    padding-top: 4px;
 }
 
 
