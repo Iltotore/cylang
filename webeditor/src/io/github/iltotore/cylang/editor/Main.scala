@@ -38,7 +38,9 @@ object Main extends TyrianApp[Msg, EditorModel] {
 
     case Msg.LoadPredef(Left(error)) => (model.copy(output = error.toString), Cmd.None)
 
-    case Msg.EditCode(code) => (model.copy(currentCode = code), Cmd.None)
+    case Msg.EditCode(code) =>
+      println("edited code")
+      (model.copy(currentCode = code), Cmd.None)
 
     case Msg.Run =>
       (model.copy(output = "Lancement...\n"), Cmd.Run(runCode(model.currentCode, model.context), result => Msg.Finish(result.left.toOption)))

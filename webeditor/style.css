@@ -86,9 +86,10 @@ html, body {
 
 #editor {
     display: flex;
-    flex-grow: 2;
+    flex: 0;
+    min-height: 66%;
     background-color: #EEEEEE;
-    overflow: scroll;
+    overflow-y: auto;
     resize: none;
     font: 16px "Fira Code", monospace;
 }
@@ -105,6 +106,7 @@ html, body {
 #editor-code {
     display: flex;
     flex-grow: 1;
+    overflow: hidden;
     border: none;
     resize: none;
     white-space: pre-wrap;
@@ -116,7 +118,8 @@ html, body {
 
 #console {
     display: flex;
-    flex-grow: 1;
+    flex: 0;
+    min-height: 34%;
     background-color: #002b36;
     color: white;
     width: 100%;
