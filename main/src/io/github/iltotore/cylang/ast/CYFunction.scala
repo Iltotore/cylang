@@ -34,7 +34,10 @@ trait CYFunction {
   def evaluate(args: List[Value])(using context: Context, evaluator: Evaluator[Expression]): EvalResult = {
     var scope = context.scope
     for ((param, arg) <- parameters.zip(args)) scope = scope.withDeclaration(param.name, param.tpe, arg)
-    for ((name, (tpe, value)) <- variables) scope = scope.withDeclaration(name, tpe, value)
+    for ((name, (tpe, _)) <- variables) tpe.defaultValue match {
+      case Right(value) => scope = scope.withDeclaration(name, tpe, value)
+      case Left(message) => return Left(message)
+    }
     execute(using context.copy(scope = scope))
   }
 
