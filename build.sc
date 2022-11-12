@@ -1,8 +1,11 @@
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.0`
+import de.tobiasroeser.mill.vcs.version.VcsVersion
+
 import mill._, scalalib._, scalajslib._, define.Source
 
 import $file.fix, fix.FixedScalaNativeModule
 
-def projectVersion = "0.1.0"
+def projectVersion = T { VcsVersion.vcsState().format(commitCountPad = -1, countSep = "") }
 
 object main extends ScalaModule {
 
@@ -96,7 +99,7 @@ object cli extends FixedScalaNativeModule {
     os.write(
       file,
       Map(
-        "CYLang" -> projectVersion,
+        "CYLang" -> projectVersion(),
         "Scala" -> scalaVersion(),
         "Scala Native" -> scalaNativeVersion()
       )
