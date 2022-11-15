@@ -54,16 +54,24 @@ html, body {
     width: fit-content;
 }
 
-#social {
+#socialDiv {
     display: flex;
     flex-direction: row-reverse;
     flex-grow: 1;
     height: 100%;
+}
+
+#socialLink {
+    display: flex;
+    flex-basis: 0;
+    flex-direction: row-reverse;
+    height: 100%;
+    width: fit-content;
     color: black;
     text-decoration: none;
 }
 
-#social:hover {
+#socialLink:hover {
     color: white;
     filter: brightness(0%) saturate(100%) invert();
 }

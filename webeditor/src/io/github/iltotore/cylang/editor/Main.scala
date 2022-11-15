@@ -72,9 +72,11 @@ object Main extends TyrianApp[Msg, EditorModel] {
           button(className := "button", onClick(Msg.Download))("Télécharger"),
           button(className := "button", onClick(Msg.Clear))("Effacer la console")
         ),
-        a(id := "social", href := "https://github.com/Iltotore/cylang", target := "_blank")(
-          img(className := "socialLogo", src := "github_icon.svg"),
-          span(className := "socialText")("CY Lang créé par Raphaël FROMENTIN")
+        div(id := "socialDiv")(
+          a(id := "socialLink", href := "https://github.com/Iltotore/cylang", target := "_blank")(
+            img(className := "socialLogo", src := "github_icon.svg"),
+            span(className := "socialText")("CY Lang créé par Raphaël FROMENTIN")
+          )
         )
       ),
       gui.editor(model.currentCode.count(_ == '\n')),
